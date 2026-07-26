@@ -8,43 +8,107 @@ from datetime import datetime
 
 NEWS_SOURCES = {
 
+    # Crypto
+
     "CoinDesk": {
-        "url": "https://www.coindesk.com/arc/outboundfeeds/rss/",
+        "category": "Crypto",
+        "url": "https://www.coindesk.com/arc/outboundfeeds/rss/"
     },
 
     "Cointelegraph": {
-        "url": "https://cointelegraph.com/rss",
+        "category": "Crypto",
+        "url": "https://cointelegraph.com/rss"
     },
 
     "Decrypt": {
-        "url": "https://decrypt.co/feed",
+        "category": "Crypto",
+        "url": "https://decrypt.co/feed"
     },
 
     "CryptoSlate": {
-        "url": "https://cryptoslate.com/feed/",
+        "category": "Crypto",
+        "url": "https://cryptoslate.com/feed/"
     },
 
-    "NewsBTC": {
-        "url": "https://www.newsbtc.com/feed/",
+
+    # USA Market
+
+    "Reuters Market": {
+        "category": "USA Market",
+        "url":
+        "https://news.google.com/rss/search?q=Reuters+market+economy+Fed"
     },
 
-    "CryptoPotato": {
-        "url": "https://cryptopotato.com/feed/",
+
+    "CNBC": {
+        "category": "USA Market",
+        "url":
+        "https://news.google.com/rss/search?q=CNBC+markets+stocks"
+    },
+
+
+    "Yahoo Finance": {
+        "category": "USA Market",
+        "url":
+        "https://news.google.com/rss/search?q=Yahoo+Finance+Federal+Reserve"
+    },
+
+
+    # Trump / Politics
+
+    "Trump News": {
+        "category": "Trump Alert",
+        "url":
+        "https://news.google.com/rss/search?q=Donald+Trump+White+House"
+    },
+
+
+    "Fed News": {
+        "category": "Trump/Fed Alert",
+        "url":
+        "https://news.google.com/rss/search?q=Federal+Reserve+Jerome+Powell+interest+rates"
     }
+
 }
+
+
+
+MARKET_KEYWORDS = [
+
+    "Trump",
+    "Donald Trump",
+    "White House",
+    "Federal Reserve",
+    "Fed",
+    "Jerome Powell",
+    "interest rate",
+    "inflation",
+    "CPI",
+    "SEC",
+    "ETF",
+    "Bitcoin",
+    "crypto",
+    "tariff",
+    "sanction",
+    "war",
+    "oil",
+    "gold",
+    "dollar"
+
+]
+
 
 
 HEADERS = {
 
     "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 "
-        "Chrome/120.0 Safari/537.36",
+        "Mozilla/5.0 Chrome/120 Safari/537.36",
 
     "Accept":
-        "application/rss+xml, application/xml, text/xml"
+        "application/rss+xml, application/xml"
 
 }
+
 
 
 SEEN_FILE = "seen_news.json"
@@ -115,14 +179,28 @@ def clean_text(text):
 
 
 
-def get_feed(source, url):
+def check_impact(title):
+
+    title_lower = title.lower()
+
+    for word in MARKET_KEYWORDS:
+
+        if word.lower() in title_lower:
+
+            return True
+
+    return False
+
+
+
+def get_feed(source, data):
 
     news = []
 
     try:
 
         response = requests.get(
-            url,
+            data["url"],
             headers=HEADERS,
             timeout=20
         )
@@ -136,20 +214,13 @@ def get_feed(source, url):
         )
 
 
-        items = soup.find_all(
-            "item"
-        )
+        items = soup.find_all("item")
 
 
         for item in items[:10]:
 
-            title_tag = item.find(
-                "title"
-            )
-
-            link_tag = item.find(
-                "link"
-            )
+            title_tag = item.find("title")
+            link_tag = item.find("link")
 
 
             title = clean_text(
@@ -171,19 +242,25 @@ def get_feed(source, url):
                 news.append({
 
                     "id":
-                        create_id(link),
+                    create_id(link),
 
                     "source":
-                        source,
+                    source,
+
+                    "category":
+                    data["category"],
 
                     "title":
-                        title,
+                    title,
 
                     "link":
-                        link,
+                    link,
+
+                    "impact":
+                    check_impact(title),
 
                     "time":
-                        datetime.now().isoformat()
+                    datetime.now().isoformat()
 
                 })
 
@@ -206,30 +283,18 @@ def get_news(limit=50):
     seen = load_seen()
 
 
-    # تعداد خبر از هر منبع
-    per_source = max(
-        1,
-        limit // len(NEWS_SOURCES)
-    )
-
-
     for source, data in NEWS_SOURCES.items():
 
         result = get_feed(
             source,
-            data["url"]
+            data
         )
-
-
-        count = 0
 
 
         for item in result:
 
-            if (
-                item["id"] not in seen
-                and count < per_source
-            ):
+
+            if item["id"] not in seen:
 
                 all_news.append(
                     item
@@ -239,11 +304,17 @@ def get_news(limit=50):
                     item["id"]
                 )
 
-                count += 1
-
 
     save_seen(
         seen
+    )
+
+
+    # خبرهای مهم اول نمایش داده شوند
+
+    all_news.sort(
+        key=lambda x: x["impact"],
+        reverse=True
     )
 
 
@@ -266,8 +337,18 @@ if __name__ == "__main__":
         print("\n🆕 خبر جدید")
 
         print(
+            "📂 دسته:",
+            item["category"]
+        )
+
+        print(
             "📰 منبع:",
             item["source"]
+        )
+
+        print(
+            "🚨 مهم بازار:",
+            item["impact"]
         )
 
         print(
@@ -280,6 +361,4 @@ if __name__ == "__main__":
             item["link"]
         )
 
-        print(
-            "-" * 50
-        )
+        print("-"*50)
