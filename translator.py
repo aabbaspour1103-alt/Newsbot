@@ -21,6 +21,7 @@ PROTECTED_TERMS = {
     "Tether": "تتر",
     "USDT": "USDT",
 
+    # Crypto terms
     "ETF": "ETF",
     "NFT": "NFT",
     "DeFi": "دیفای",
@@ -30,12 +31,20 @@ PROTECTED_TERMS = {
     "Exchange": "صرافی",
     "Token": "توکن",
 
-    # Finance
+    # ETF / Finance
+    "Hashdex": "Hashdex",
+    "Trust": "تراست",
+    "Shares": "سهام",
+    "share": "سهم",
+    "provider": "ارائه‌دهنده",
+    "issuer": "ناشر",
+    "underlying assets": "دارایی‌های پایه",
+    "net income": "درآمد خالص",
+    "annual threshold": "آستانه سالانه",
+
     "Federal Reserve": "فدرال رزرو آمریکا",
     "Fed": "فدرال رزرو آمریکا",
     "Jerome Powell": "جروم پاول",
-    "Donald Trump": "دونالد ترامپ",
-    "White House": "کاخ سفید",
 
     "SEC": "کمیسیون بورس آمریکا (SEC)",
     "CFTC": "کمیسیون معاملات آتی کالا آمریکا (CFTC)",
@@ -47,11 +56,10 @@ PROTECTED_TERMS = {
     "bond traders": "معامله‌گران اوراق قرضه",
     "bond market": "بازار اوراق قرضه",
     "bond yields": "بازده اوراق قرضه",
-    "yield": "بازده اوراق قرضه",
+    "yield": "بازده",
 
     "inflation": "تورم",
     "recession": "رکود اقتصادی"
-
 }
 
 
@@ -59,15 +67,17 @@ PROTECTED_TERMS = {
 REPLACE_WORDS = {
 
     "بهره بهره": "بهره",
-    "اوراق قرضهs": "اوراق قرضه",
+    "اوراق قرضههای": "اوراق قرضه",
+    "اوراق قرضه های": "اوراق قرضه",
     "در به عنوان": "در آستانه",
-    "به عنوان خطرات": "با افزایش نگرانی‌ها درباره",
-    "سوار شد": "آماده شد",
+    "سوار شد": "افزایش یافت",
+    "هزینه های ارائه دهنده اول": "هزینه‌های ارائه‌دهنده",
+    "ارائه دهنده اول": "ارائه‌دهنده",
+    "سهام اولیه شما": "سهام پایه",
+    "می کندهزینه": "می‌کند. هزینه",
+    "های سهام": "سهام",
+    "بازده بازده": "بازده",
     "Edge": "",
-
-    "بازارهای پیش بینی": "بازارهای پیش‌بینی",
-    "نهاد تنظیم کننده": "نهاد نظارتی",
-    "تنظیم کننده": "نهاد نظارتی",
 
 }
 
@@ -79,18 +89,28 @@ def protect_terms(text):
 
     counter = 0
 
+    # طولانی‌ترها اول
+    terms = sorted(
+        PROTECTED_TERMS.items(),
+        key=lambda x: len(x[0]),
+        reverse=True
+    )
 
-    for key, value in PROTECTED_TERMS.items():
 
-        if key.lower() in text.lower():
+    for key, value in terms:
+
+        pattern = re.compile(
+            re.escape(key),
+            re.IGNORECASE
+        )
+
+        if pattern.search(text):
 
             marker = f"ZZTERM{counter}ZZ"
 
-            text = re.sub(
-                key,
+            text = pattern.sub(
                 marker,
-                text,
-                flags=re.IGNORECASE
+                text
             )
 
             protected[marker] = value
@@ -129,28 +149,21 @@ def clean_text(text):
         )
 
 
-    # حذف کلمات تکراری پشت سر هم
+    # حذف تکرار کلمات
     words = text.split()
 
-    result = []
+    clean = []
 
-    for word in words:
+    for w in words:
 
-        if not result or word != result[-1]:
-            result.append(word)
-
-
-    text = " ".join(result)
+        if not clean or w != clean[-1]:
+            clean.append(w)
 
 
-    # حذف حروف انگلیسی چسبیده به فارسی
-    text = re.sub(
-        r"([آ-ی])([a-zA-Z]+)",
-        r"\1",
-        text
-    )
+    text = " ".join(clean)
 
 
+    # فاصله‌ها
     text = re.sub(
         r"\s+",
         " ",
@@ -162,7 +175,6 @@ def clean_text(text):
         " ،",
         "،"
     )
-
 
     text = text.replace(
         " .",
@@ -180,33 +192,32 @@ def good_translation(text):
         return False
 
 
-    bad = [
+    bad_words = [
 
         "ZZTERM",
         "undefined",
         "None",
-        "در به عنوان",
-        "سوار شد"
+        "سوار شد",
+        "شما و",
+        "اول است"
 
     ]
 
 
-    for item in bad:
+    for bad in bad_words:
 
-        if item in text:
+        if bad in text:
             return False
 
 
-    return len(text.split()) >= 3
+    return len(text.split()) >= 4
 
 
 
-def shorten(text, limit=600):
+def shorten(text, limit=700):
 
     if len(text) <= limit:
-
         return text
-
 
     return text[:limit] + "..."
 
@@ -215,7 +226,6 @@ def shorten(text, limit=600):
 def translate_text(text):
 
     if not text:
-
         return ""
 
 
@@ -272,8 +282,8 @@ def translate_text(text):
 if __name__ == "__main__":
 
     test = """
-    Bond traders are watching the Federal Reserve decision.
-    Bitcoin ETF demand increased while Ethereum prices rose.
+    Hashdex crypto ETF keeps 100% of bond yield returns.
+    Above the annual threshold, 40% goes to Hashdex and 60% goes to the Trust.
     """
 
     print(
