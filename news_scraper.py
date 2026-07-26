@@ -206,6 +206,13 @@ def get_news(limit=50):
     seen = load_seen()
 
 
+    # تعداد خبر از هر منبع
+    per_source = max(
+        1,
+        limit // len(NEWS_SOURCES)
+    )
+
+
     for source, data in NEWS_SOURCES.items():
 
         result = get_feed(
@@ -214,15 +221,25 @@ def get_news(limit=50):
         )
 
 
+        count = 0
+
+
         for item in result:
 
-            if item["id"] not in seen:
+            if (
+                item["id"] not in seen
+                and count < per_source
+            ):
 
-                all_news.append(item)
+                all_news.append(
+                    item
+                )
 
                 seen.append(
                     item["id"]
                 )
+
+                count += 1
 
 
     save_seen(
