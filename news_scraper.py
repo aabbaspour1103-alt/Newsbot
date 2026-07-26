@@ -39,47 +39,62 @@ NEWS_SOURCES = {
         "url": "https://bitcoinmagazine.com/.rss/full/"
     },
 
-
     "Reuters Market": {
         "category": "Global Market",
-        "url":
-        "https://news.google.com/rss/search?q=Reuters+market+economy+Fed"
+        "url": "https://news.google.com/rss/search?q=Reuters+market+economy+Fed"
     },
 
     "Bloomberg Market": {
         "category": "Global Market",
-        "url":
-        "https://news.google.com/rss/search?q=Bloomberg+markets+economy"
+        "url": "https://news.google.com/rss/search?q=Bloomberg+markets+economy"
     },
 
     "MarketWatch": {
         "category": "USA Market",
-        "url":
-        "https://news.google.com/rss/search?q=MarketWatch+stocks+Federal+Reserve"
+        "url": "https://news.google.com/rss/search?q=MarketWatch+stocks+Federal+Reserve"
     },
 
     "CNBC": {
         "category": "USA Market",
-        "url":
-        "https://news.google.com/rss/search?q=CNBC+markets+stocks"
+        "url": "https://news.google.com/rss/search?q=CNBC+markets+stocks"
     },
 
+    "Yahoo Finance": {
+        "category": "Global Market",
+        "url": "https://news.google.com/rss/search?q=Yahoo+Finance+stocks"
+    },
+
+    "Financial Times": {
+        "category": "Global Market",
+        "url": "https://news.google.com/rss/search?q=Financial+Times+markets"
+    },
+
+    "Wall Street Journal": {
+        "category": "Global Market",
+        "url": "https://news.google.com/rss/search?q=Wall+Street+Journal+markets"
+    },
+
+    "Barrons": {
+        "category": "Global Market",
+        "url": "https://news.google.com/rss/search?q=Barrons+markets"
+    },
+
+    "Investing.com": {
+        "category": "Global Market",
+        "url": "https://news.google.com/rss/search?q=Investing.com+markets"
+    },
 
     "Trump Alert": {
         "category": "Trump",
-        "url":
-        "https://news.google.com/rss/search?q=Donald+Trump+White+House"
+        "url": "https://news.google.com/rss/search?q=Donald+Trump+White+House"
     },
-
 
     "Federal Reserve": {
         "category": "FED",
-        "url":
-        "https://news.google.com/rss/search?q=Federal+Reserve+Jerome+Powell+interest+rates"
+        "url": "https://news.google.com/rss/search?q=Federal+Reserve+Jerome+Powell+interest+rates"
     }
 
 }
-
 
 
 MARKET_KEYWORDS = [
@@ -93,10 +108,17 @@ MARKET_KEYWORDS = [
     "interest rate",
     "inflation",
     "CPI",
+    "PCE",
+    "GDP",
+    "FOMC",
+    "ECB",
     "SEC",
     "ETF",
     "Bitcoin",
     "Ethereum",
+    "Solana",
+    "XRP",
+    "USDT",
     "crypto",
     "tariff",
     "sanction",
@@ -104,26 +126,38 @@ MARKET_KEYWORDS = [
     "gold",
     "dollar",
     "stock",
-    "market"
+    "market",
+    "Nasdaq",
+    "S&P 500",
+    "Dow Jones",
+    "Treasury",
+    "bond",
+    "yield"
 
 ]
 
 
 URGENT_KEYWORDS = [
 
+    "breaking",
     "war",
     "attack",
+    "missile",
     "invasion",
     "crisis",
     "emergency",
     "collapse",
     "bank failure",
+    "bankruptcy",
+    "liquidation",
     "market crash",
     "global crisis",
     "Trump announces",
     "Trump signs",
+    "executive order",
     "Fed emergency",
     "emergency meeting",
+    "Fed decision",
     "rate cut",
     "rate hike",
     "ETF approved",
@@ -132,7 +166,6 @@ URGENT_KEYWORDS = [
     "major sanctions"
 
 ]
-
 
 
 HEADERS = {
@@ -146,12 +179,7 @@ HEADERS = {
 }
 
 
-
-SEEN_FILE = "seen_news.json"
-
-
-
-def load_seen():
+SEEN_FILE = "seen_news.json"def load_seen():
 
     if os.path.exists(SEEN_FILE):
 
@@ -194,7 +222,7 @@ def save_seen(data):
 
 def create_id(title, link):
 
-    text = title + link
+    text = title.strip().lower()
 
     return hashlib.sha256(
         text.encode("utf-8")
@@ -247,14 +275,17 @@ def get_feed(source, data):
 
         response.raise_for_status()
 
-
         soup = BeautifulSoup(
             response.content,
             "xml"
         )
 
+        items = soup.find_all("item")
 
-        for item in soup.find_all("item")[:15]:
+        if not items:
+            items = soup.find_all("entry")
+
+        for item in items[:15]:
 
             title = clean_text(
                 item.title.text
@@ -262,27 +293,36 @@ def get_feed(source, data):
                 else ""
             )
 
-
-            link = (
-                item.link.text.strip()
-                if item.link
-                else ""
-            )
-
-
-            description = clean_text(
-                item.description.text
-                if item.description
-                else ""
-            )
-
-
-            if not title or not link:
+            if len(title) < 20:
                 continue
 
+            if item.link:
+
+                if item.link.has_attr("href"):
+                    link = item.link["href"]
+
+                else:
+                    link = item.link.text.strip()
+
+            else:
+                link = ""
+
+            description = ""
+
+            if item.description:
+                description = clean_text(
+                    item.description.text
+                )
+
+            elif item.summary:
+                description = clean_text(
+                    item.summary.text
+                )
+
+            if not link:
+                continue
 
             text = title + " " + description
-
 
             news.append({
 
@@ -295,51 +335,11 @@ def get_feed(source, data):
                 "category":
                 data["category"],
 
-                "title":
-                title,
-
-                "description":
-                description[:700],
-
-                "link":
-                link,
-
-                "urgent":
-                check_keyword(
-                    text,
-                    URGENT_KEYWORDS
-                ),
-
-                "impact":
-                check_keyword(
-                    text,
-                    MARKET_KEYWORDS
-                ),
-
-                "time":
-                datetime.utcnow().isoformat()
-
-            })
-
-
-    except Exception as e:
-
-        print(
-            f"خطا در {source}: {e}"
-        )
-
-
-    return news
-
-
-
-
-def get_news(limit=50):
+                "def get_news(limit=50):
 
     all_news = []
 
     seen = load_seen()
-
 
     for source, data in NEWS_SOURCES.items():
 
@@ -347,7 +347,6 @@ def get_news(limit=50):
             source,
             data
         )
-
 
         for item in feeds:
 
@@ -359,20 +358,16 @@ def get_news(limit=50):
                     item["id"]
                 )
 
-
     save_seen(seen)
 
-
-
     all_news.sort(
-        key=lambda x:
-        (
+        key=lambda x: (
             x["urgent"],
-            x["impact"]
+            x["impact"],
+            x["time"]
         ),
         reverse=True
     )
-
 
     return all_news[:limit]
 
@@ -383,11 +378,9 @@ if __name__ == "__main__":
 
     news = get_news()
 
-
     print(
         f"تعداد خبرهای جدید: {len(news)}"
     )
-
 
     for n in news:
 
@@ -399,21 +392,44 @@ if __name__ == "__main__":
         )
 
         print(
+            "📰 منبع:",
+            n["source"]
+        )
+
+        print(
             "🚨 فوری:",
-            n["urgent"]
+            "بله" if n["urgent"] else "خیر"
         )
 
         print(
             "⚠️ مهم:",
-            n["impact"]
+            "بله" if n["impact"] else "خیر"
+        )
+
+        print(
+            "📝 عنوان:"
         )
 
         print(
             n["title"]
         )
 
+        if n["description"]:
+
+            print(
+                "\n📄 توضیحات:"
+            )
+
+            print(
+                n["description"]
+            )
+
+        print(
+            "\n🔗 لینک:"
+        )
+
         print(
             n["link"]
         )
 
-        print("-"*50)
+        print("-" * 60)
