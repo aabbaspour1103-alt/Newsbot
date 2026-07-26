@@ -12,16 +12,43 @@ CHANNEL_ID = os.getenv("CHANNEL_ID")
 
 
 
+def clean_text(text):
+
+    if not text:
+        return ""
+
+    remove_list = [
+
+        "این خبر می‌تواند روی روند بازارهای مالی و رفتار سرمایه‌گذاران تاثیرگذار باشد.",
+        "تحلیلگران در حال بررسی پیامدهای احتمالی این خبر هستند."
+
+    ]
+
+    for item in remove_list:
+
+        text = text.replace(
+            item,
+            ""
+        )
+
+    return text.strip()
+
+
+
 async def send_news():
 
     if not TOKEN:
+
         print("❌ TOKEN پیدا نشد")
         return
 
 
+
     if not CHANNEL_ID:
+
         print("❌ CHANNEL_ID پیدا نشد")
         return
+
 
 
     bot = Bot(
@@ -29,9 +56,11 @@ async def send_news():
     )
 
 
+
     news_list = get_news(
         limit=1
     )
+
 
 
     if not news_list:
@@ -47,15 +76,25 @@ async def send_news():
     news = news_list[0]
 
 
+
     title = news["title"]
+
     source = news["source"]
+
     category = news.get(
         "category",
         "Market"
     )
 
-    impact = news.get(
-        "impact",
+
+    description = news.get(
+        "description",
+        ""
+    )
+
+
+    urgent = news.get(
+        "urgent",
         False
     )
 
@@ -66,42 +105,40 @@ async def send_news():
     )
 
 
-    if impact:
+    translated_description = translate_text(
+        description
+    )
 
-        header = "🚨 خبر مهم بازار"
 
-    else:
-
-        header = "📰 خبر جدید بازار"
+    translated_description = clean_text(
+        translated_description
+    )
 
 
 
     if category == "Crypto":
 
-        emoji = "₿"
+        header = "📰 اخبــار بـازار"
 
-    elif "Trump" in category:
 
-        emoji = "🇺🇸"
+    elif urgent:
 
-    elif "Fed" in category:
+        header = "🚨 خـــبر فـــوری"
 
-        emoji = "🏦"
 
     else:
 
-        emoji = "📊"
+        header = "🚨 خـــبر"
+
 
 
 
     message = f"""
 {header}
 
-{emoji} {translated_title}
+- {translated_title}
 
-این خبر می‌تواند روی روند بازارهای مالی و رفتار سرمایه‌گذاران تاثیرگذار باشد.
-
-تحلیلگران در حال بررسی پیامدهای احتمالی این خبر هستند.
+{translated_description}
 
 📰 منبع: {source}
 
@@ -109,10 +146,12 @@ async def send_news():
 """
 
 
+
     await bot.send_message(
         chat_id=CHANNEL_ID,
-        text=message
+        text=message.strip()
     )
+
 
 
     print(
