@@ -25,27 +25,34 @@ def clean_text(text):
     ]
 
     for item in remove_list:
-
-        text = text.replace(
-            item,
-            ""
-        )
+        text = text.replace(item, "")
 
     return text.strip()
+
+
+
+def valid_news(news):
+
+    if not news:
+        return False
+
+    title = news.get("title", "").strip()
+
+    if len(title) < 15:
+        return False
+
+    return True
 
 
 
 async def send_news():
 
     if not TOKEN:
-
         print("❌ TOKEN پیدا نشد")
         return
 
 
-
     if not CHANNEL_ID:
-
         print("❌ CHANNEL_ID پیدا نشد")
         return
 
@@ -58,28 +65,48 @@ async def send_news():
 
 
     news_list = get_news(
-        limit=1
+        limit=10
     )
 
 
 
     if not news_list:
 
-        print(
-            "❌ خبر جدیدی پیدا نشد"
-        )
-
+        print("❌ خبر جدیدی پیدا نشد")
         return
 
 
 
-    news = news_list[0]
+    news = None
+
+
+    for item in news_list:
+
+        if valid_news(item):
+
+            news = item
+            break
 
 
 
-    title = news["title"]
+    if not news:
 
-    source = news["source"]
+        print("❌ خبر معتبر پیدا نشد")
+        return
+
+
+
+    title = news.get(
+        "title",
+        ""
+    )
+
+
+    source = news.get(
+        "source",
+        "Unknown"
+    )
+
 
     category = news.get(
         "category",
@@ -100,14 +127,28 @@ async def send_news():
 
 
 
-    translated_title = translate_text(
-        title
-    )
+    try:
+
+        translated_title = translate_text(
+            title
+        )
+
+    except Exception:
+
+        translated_title = title
 
 
-    translated_description = translate_text(
-        description
-    )
+
+    try:
+
+        translated_description = translate_text(
+            description
+        )
+
+    except Exception:
+
+        translated_description = description
+
 
 
     translated_description = clean_text(
@@ -120,11 +161,9 @@ async def send_news():
 
         header = "📰 اخبــار بـازار"
 
-
     elif urgent:
 
         header = "🚨 خـــبر فـــوری"
-
 
     else:
 
@@ -132,13 +171,22 @@ async def send_news():
 
 
 
-
     message = f"""
 {header}
 
 - {translated_title}
+"""
+
+
+    if translated_description:
+
+        message += f"""
 
 {translated_description}
+"""
+
+
+    message += f"""
 
 📰 منبع: {source}
 
@@ -147,16 +195,23 @@ async def send_news():
 
 
 
-    await bot.send_message(
-        chat_id=CHANNEL_ID,
-        text=message.strip()
-    )
+    try:
+
+        await bot.send_message(
+            chat_id=CHANNEL_ID,
+            text=message.strip()
+        )
+
+        print(
+            "✅ خبر با موفقیت ارسال شد"
+        )
 
 
+    except Exception as e:
 
-    print(
-        "✅ خبر با موفقیت ارسال شد"
-    )
+        print(
+            f"❌ خطا در ارسال تلگرام: {e}"
+        )
 
 
 
