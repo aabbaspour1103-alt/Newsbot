@@ -26,6 +26,6 @@ jobs:
       - name: Run Newsbot
         env:
           TOKEN: ${{ secrets.TOKEN }}
-          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          CHANNEL_ID: "@CryptoBrew"
         run: |
           python bot.py
