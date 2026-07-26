@@ -1,360 +1,122 @@
-import requests
+import feedparser
+import hashlib
 import json
 import os
-import hashlib
-
-from bs4 import BeautifulSoup
-from datetime import datetime
 
 
 NEWS_SOURCES = {
 
-    "CoinDesk": {
-        "category": "Crypto",
-        "url": "https://www.coindesk.com/arc/outboundfeeds/rss/"
-    },
+    "CoinDesk": "https://www.coindesk.com/arc/outboundfeeds/rss/",
+    "Cointelegraph": "https://cointelegraph.com/rss",
+    "Decrypt": "https://decrypt.co/feed",
+    "Bloomberg": "https://feeds.bloomberg.com/markets/news.rss",
+    "CNBC": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+    "Reuters": "https://feeds.reuters.com/reuters/businessNews"
 
-    "Cointelegraph": {
-        "category": "Crypto",
-        "url": "https://cointelegraph.com/rss"
-    },
-
-    "Decrypt": {
-        "category": "Crypto",
-        "url": "https://decrypt.co/feed"
-    },
-
-    "CryptoSlate": {
-        "category": "Crypto",
-        "url": "https://cryptoslate.com/feed/"
-    },
-
-    "The Block": {
-        "category": "Crypto",
-        "url": "https://www.theblock.co/rss.xml"
-    },
-
-    "Bitcoin Magazine": {
-        "category": "Crypto",
-        "url": "https://bitcoinmagazine.com/.rss/full/"
-    },
-
-    "Reuters": {
-        "category": "Market",
-        "url": "https://news.google.com/rss/search?q=Reuters+market+economy"
-    },
-
-    "Bloomberg": {
-        "category": "Market",
-        "url": "https://news.google.com/rss/search?q=Bloomberg+markets"
-    },
-
-    "CNBC": {
-        "category": "Market",
-        "url": "https://news.google.com/rss/search?q=CNBC+stocks"
-    },
-
-    "Federal Reserve": {
-        "category": "FED",
-        "url": "https://news.google.com/rss/search?q=Federal+Reserve+Powell+interest+rates"
-    },
-
-    "Trump": {
-        "category": "Politics",
-        "url": "https://news.google.com/rss/search?q=Donald+Trump+White+House"
-    }
 }
 
 
-
-MARKET_WORDS = [
-    "bitcoin",
-    "ethereum",
-    "crypto",
-    "ETF",
-    "SEC",
-    "Fed",
-    "Federal Reserve",
-    "Powell",
-    "interest rate",
-    "inflation",
-    "CPI",
-    "GDP",
-    "Trump",
-    "tariff",
-    "gold",
-    "oil",
-    "dollar",
-    "stock",
-    "market"
-]
-
-
-URGENT_WORDS = [
-    "breaking",
-    "crisis",
-    "war",
-    "attack",
-    "collapse",
-    "bank failure",
-    "market crash",
-    "emergency",
-    "rate cut",
-    "rate hike",
-    "ETF approved",
-    "SEC approves"
-]
-
-
-HEADERS = {
-    "User-Agent": "Mozilla/5.0"
-}
-
-
-SEEN_FILE = "seen_news.json"
+SAVE_FILE = "sent_news.json"
 
 
 
-def load_seen():
+def load_sent():
 
-    if os.path.exists(SEEN_FILE):
+    if not os.path.exists(SAVE_FILE):
+        return []
 
-        try:
+    try:
+        with open(SAVE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
 
-            with open(
-                SEEN_FILE,
-                "r",
-                encoding="utf-8"
-            ) as f:
-
-                return json.load(f)
-
-        except:
-
-            return []
-
-    return []
+    except:
+        return []
 
 
 
-def save_seen(data):
+def save_sent(data):
 
     with open(
-        SEEN_FILE,
+        SAVE_FILE,
         "w",
         encoding="utf-8"
     ) as f:
 
         json.dump(
-            data[-1000:],
+            data,
             f,
             ensure_ascii=False
         )
 
 
 
-def make_id(title):
+def news_id(text):
 
-    return hashlib.sha256(
-        title.lower().encode("utf-8")
+    return hashlib.md5(
+        text.encode()
     ).hexdigest()
 
 
 
-def clean(text):
+def get_news(limit=20):
 
-    if not text:
-        return ""
-
-    return BeautifulSoup(
-        text,
-        "html.parser"
-    ).get_text(
-        " ",
-        strip=True
-    )
-
-
-
-def has_word(text, words):
-
-    text = text.lower()
-
-    return any(
-        w.lower() in text
-        for w in words
-    )
-
-
-
-def get_feed(source, data):
-
-    result = []
-
-    try:
-
-        r = requests.get(
-            data["url"],
-            headers=HEADERS,
-            timeout=20
-        )
-
-        soup = BeautifulSoup(
-            r.content,
-            "xml"
-        )
-
-        items = soup.find_all("item")
-
-
-        for item in items[:10]:
-
-            if
-            def get_news(limit=50):
+    sent = load_sent()
 
     news = []
 
-    seen = load_seen()
+
+    for source, url in NEWS_SOURCES.items():
+
+        try:
+
+            feed = feedparser.parse(url)
 
 
-    for source, data in NEWS_SOURCES.items():
+            for item in feed.entries[:5]:
 
-        items = get_feed(
-            source,
-            data
-        )
+                title = item.get(
+                    "title",
+                    ""
+                )
 
-
-        for item in items:
-
-            if item["id"] not in seen:
-
-                news.append(item)
-
-                seen.append(
-                    item["id"]
+                link = item.get(
+                    "link",
+                    ""
                 )
 
 
-    save_seen(
-        seen
-    )
+                if not title:
+                    continue
 
 
-    news.sort(
-        key=lambda x: (
-            x["urgent"],
-            x["impact"],
-            x["time"]
-        ),
-        reverse=True
-    )
+                uid = news_id(title)
 
 
-    return news[:limit]
+                if uid in sent:
+                    continue
 
 
+                news.append({
 
-def get_best_news(limit=10):
+                    "source": source,
+                    "title": title,
+                    "link": link
 
-    news = get_news(
-        limit
-    )
-
-
-    important = [
-
-        n for n in news
-
-        if n["urgent"] or n["impact"]
-
-    ]
+                })
 
 
-    if important:
-
-        return important[:limit]
+                sent.append(uid)
 
 
-    return news[:limit]
+                if len(news) >= limit:
+                    break
 
 
-
-def telegram_text(item):
-
-    text = f"""
-📰 {item['source']}
-
-📂 دسته:
-{item['category']}
-
-{"🚨 خبر فوری" if item['urgent'] else "📝 خبر بازار"}
-
-{item['title']}
-"""
+        except Exception:
+            continue
 
 
-    if item["description"]:
-
-        text += (
-            "\n📄 "
-            +
-            item["description"]
-        )
+    save_sent(sent[-500:])
 
 
-    if item["link"]:
-
-        text += (
-            "\n\n🔗 "
-            +
-            item["link"]
-        )
-
-
-    return text.strip()
-
-
-
-def get_telegram_news(limit=5):
-
-    news = get_best_news(
-        limit
-    )
-
-
-    return [
-
-        telegram_text(item)
-
-        for item in news
-
-    ]
-
-
-
-if __name__ == "__main__":
-
-    news = get_news()
-
-
-    print(
-        f"تعداد خبرهای جدید: {len(news)}"
-    )
-
-
-    for item in news:
-
-        print("\n" + "-" * 50)
-
-        print(
-            item["source"]
-        )
-
-        print(
-            item["title"]
-        )
-
-        print(
-            item["link"]
-        )
+    return news
