@@ -84,12 +84,14 @@ def clean_text(text):
     if not text:
         return ""
 
+    # حذف HTML
     text = re.sub(
-        "<.*?>",
+        r"<.*?>",
         "",
         text
     )
 
+    # حذف فاصله‌های اضافی
     text = re.sub(
         r"\s+",
         " ",
@@ -100,9 +102,43 @@ def clean_text(text):
 
 
 
-def shorten(text, limit=350):
+def remove_rubbish(text):
+
+    if not text:
+        return ""
+
+    patterns = [
+
+        r"The post .*? first appeared on .*",
+        r"The post .*? appeared first on .*",
+        r"Read more.*",
+        r"Continue reading.*",
+        r"Subscribe.*",
+        r"Advertisement.*",
+        r"Click here.*",
+        r"©.*"
+
+    ]
+
+
+    for pattern in patterns:
+
+        text = re.sub(
+            pattern,
+            "",
+            text,
+            flags=re.IGNORECASE
+        )
+
+
+    return text.strip()
+
+
+
+def shorten(text, limit=220):
 
     if len(text) <= limit:
+
         return text
 
     return text[:limit] + "..."
@@ -124,6 +160,7 @@ def check_priority(text):
     for word in URGENT_WORDS:
 
         if word.lower() in text:
+
             return True
 
     return False
@@ -142,6 +179,7 @@ def get_date(item):
             )
 
     except:
+
         pass
 
 
@@ -234,6 +272,10 @@ def get_news(limit=10):
                 )
 
 
+                description = remove_rubbish(
+                    description
+                )
+
 
                 news.append({
 
@@ -280,20 +322,14 @@ def get_news(limit=10):
 
 
 
-    # جدیدترین خبرها اول
-
     news.sort(
         key=lambda x: x["date"],
         reverse=True
     )
 
 
-
     selected = news[:limit]
 
-
-
-    # ذخیره خبرهای ارسال شده
 
     if selected:
 
@@ -305,7 +341,6 @@ def get_news(limit=10):
         )
 
         save_sent(sent)
-
 
 
     return selected
