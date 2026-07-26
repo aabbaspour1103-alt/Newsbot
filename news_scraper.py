@@ -335,7 +335,7 @@ def get_feed(source, data):
                 "category":
                 data["category"],
 
-                "def get_news(limit=50):
+                def get_news(limit=50):
 
     all_news = []
 
