@@ -49,7 +49,16 @@ async def send_news():
 
     title = news["title"]
     source = news["source"]
-    link = news["link"]
+    category = news.get(
+        "category",
+        "Market"
+    )
+
+    impact = news.get(
+        "impact",
+        False
+    )
+
 
 
     translated_title = translate_text(
@@ -57,18 +66,46 @@ async def send_news():
     )
 
 
+    if impact:
+
+        header = "🚨 خبر مهم بازار"
+
+    else:
+
+        header = "📰 خبر جدید بازار"
+
+
+
+    if category == "Crypto":
+
+        emoji = "₿"
+
+    elif "Trump" in category:
+
+        emoji = "🇺🇸"
+
+    elif "Fed" in category:
+
+        emoji = "🏦"
+
+    else:
+
+        emoji = "📊"
+
+
+
     message = f"""
-📰 خبر جدید کریپتو
+{header}
 
-🇮🇷 {translated_title}
+{emoji} {translated_title}
 
-🌐 منبع:
-{source}
+این خبر می‌تواند روی روند بازارهای مالی و رفتار سرمایه‌گذاران تاثیرگذار باشد.
 
-🔗 لینک خبر:
-{link}
+تحلیلگران در حال بررسی پیامدهای احتمالی این خبر هستند.
 
-☕ @CryptoBrew
+📰 منبع: {source}
+
+- @CryptoBrew
 """
 
 
