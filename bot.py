@@ -1,5 +1,6 @@
 import os
 import asyncio
+import re
 
 from telegram import Bot
 
@@ -11,7 +12,6 @@ TOKEN = os.getenv("TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")
 
 
-
 def clean_text(text):
 
     if not text:
@@ -20,12 +20,46 @@ def clean_text(text):
     remove_list = [
 
         "این خبر می‌تواند روی روند بازارهای مالی و رفتار سرمایه‌گذاران تاثیرگذار باشد.",
-        "تحلیلگران در حال بررسی پیامدهای احتمالی این خبر هستند."
+        "تحلیلگران در حال بررسی پیامدهای احتمالی این خبر هستند.",
+        "این خبر می تواند روی روند بازارهای مالی تاثیرگذار باشد.",
+        "Edge",
+        "edge"
 
     ]
 
     for item in remove_list:
         text = text.replace(item, "")
+
+
+    # حذف کلمات تکراری پشت سر هم
+    words = text.split()
+
+    fixed_words = []
+
+    for word in words:
+
+        if not fixed_words or word != fixed_words[-1]:
+            fixed_words.append(word)
+
+
+    text = " ".join(fixed_words)
+
+
+    # حذف حروف انگلیسی چسبیده به فارسی
+    text = re.sub(
+        r"([آ-ی])([a-zA-Z]+)",
+        r"\1",
+        text
+    )
+
+
+    # حذف فاصله های اضافی
+    text = re.sub(
+        r"\s+",
+        " ",
+        text
+    )
+
 
     return text.strip()
 
@@ -36,23 +70,58 @@ def valid_news(news):
     if not news:
         return False
 
-    title = news.get("title", "").strip()
+
+    title = news.get(
+        "title",
+        ""
+    ).strip()
+
 
     if len(title) < 15:
         return False
 
+
     return True
+
+
+
+def bad_translation(text):
+
+    if not text:
+        return True
+
+
+    bad_words = [
+
+        "بهره بهره",
+        "Edge",
+        "edge",
+        "undefined",
+        "None"
+
+    ]
+
+
+    for word in bad_words:
+
+        if word in text:
+            return True
+
+
+    return False
 
 
 
 async def send_news():
 
     if not TOKEN:
+
         print("❌ TOKEN پیدا نشد")
         return
 
 
     if not CHANNEL_ID:
+
         print("❌ CHANNEL_ID پیدا نشد")
         return
 
@@ -63,11 +132,9 @@ async def send_news():
     )
 
 
-
     news_list = get_news(
         limit=10
     )
-
 
 
     if not news_list:
@@ -139,6 +206,19 @@ async def send_news():
 
 
 
+    translated_title = clean_text(
+        translated_title
+    )
+
+
+
+    # اگر ترجمه خراب بود، متن اصلی را استفاده کن
+    if bad_translation(translated_title):
+
+        translated_title = title
+
+
+
     try:
 
         translated_description = translate_text(
@@ -201,6 +281,7 @@ async def send_news():
             chat_id=CHANNEL_ID,
             text=message.strip()
         )
+
 
         print(
             "✅ خبر با موفقیت ارسال شد"
