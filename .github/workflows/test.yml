@@ -1,10 +1,13 @@
-name: Test Newsbot
+name: Newsbot
 
 on:
   workflow_dispatch:
 
+  schedule:
+    - cron: "0 */2 * * *"
+
 jobs:
-  test-news:
+  run-newsbot:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,6 +23,9 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Test News Scraper
+      - name: Run Newsbot
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
         run: |
-          python test_news.py
+          python bot.py
