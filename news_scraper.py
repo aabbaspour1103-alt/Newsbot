@@ -10,26 +10,20 @@ from datetime import datetime
 
 NEWS_SOURCES = {
 
-
-    # Crypto
-
     "CoinDesk": {
         "category": "Crypto",
         "url": "https://www.coindesk.com/arc/outboundfeeds/rss/"
     },
-
 
     "Cointelegraph": {
         "category": "Crypto",
         "url": "https://cointelegraph.com/rss"
     },
 
-
     "Decrypt": {
         "category": "Crypto",
         "url": "https://decrypt.co/feed"
     },
-
 
     "CryptoSlate": {
         "category": "Crypto",
@@ -37,15 +31,11 @@ NEWS_SOURCES = {
     },
 
 
-
-    # USA Market
-
     "Reuters Market": {
         "category": "USA Market",
         "url":
         "https://news.google.com/rss/search?q=Reuters+market+economy+Fed"
     },
-
 
     "CNBC": {
         "category": "USA Market",
@@ -53,16 +43,12 @@ NEWS_SOURCES = {
         "https://news.google.com/rss/search?q=CNBC+markets+stocks"
     },
 
-
     "Yahoo Finance": {
         "category": "USA Market",
         "url":
         "https://news.google.com/rss/search?q=Yahoo+Finance+Federal+Reserve"
     },
 
-
-
-    # Trump / Fed
 
     "Trump News": {
         "category": "Trump Alert",
@@ -81,6 +67,7 @@ NEWS_SOURCES = {
 
 
 
+# خبرهای مهم
 
 MARKET_KEYWORDS = [
 
@@ -99,10 +86,37 @@ MARKET_KEYWORDS = [
     "crypto",
     "tariff",
     "sanction",
-    "war",
     "oil",
     "gold",
     "dollar"
+
+]
+
+
+
+# خبرهای بسیار مهم و فوری
+
+URGENT_KEYWORDS = [
+
+    "war",
+    "attack",
+    "invasion",
+    "crisis",
+    "emergency",
+    "collapse",
+    "bank failure",
+    "market crash",
+    "global crisis",
+    "Trump announces",
+    "Trump signs",
+    "Fed emergency",
+    "emergency meeting",
+    "rate cut",
+    "rate hike",
+    "ETF approved",
+    "Bitcoin ETF approved",
+    "SEC approves",
+    "major sanctions"
 
 ]
 
@@ -124,7 +138,6 @@ SEEN_FILE = "seen_news.json"
 
 
 
-
 def load_seen():
 
     if os.path.exists(SEEN_FILE):
@@ -142,7 +155,6 @@ def load_seen():
         except:
 
             return []
-
 
     return []
 
@@ -181,12 +193,10 @@ def clean_text(text):
     if not text:
         return ""
 
-
     soup = BeautifulSoup(
         text,
         "html.parser"
     )
-
 
     return soup.get_text(
         " ",
@@ -196,19 +206,37 @@ def clean_text(text):
 
 
 
-def check_impact(text):
+def check_keyword(text, keywords):
 
     text = text.lower()
 
-
-    for word in MARKET_KEYWORDS:
+    for word in keywords:
 
         if word.lower() in text:
 
             return True
 
-
     return False
+
+
+
+
+def check_impact(text):
+
+    return check_keyword(
+        text,
+        MARKET_KEYWORDS
+    )
+
+
+
+
+def check_urgent(text):
+
+    return check_keyword(
+        text,
+        URGENT_KEYWORDS
+    )
 
 
 
@@ -226,7 +254,6 @@ def get_feed(source, data):
             timeout=20
         )
 
-
         response.raise_for_status()
 
 
@@ -237,7 +264,6 @@ def get_feed(source, data):
         )
 
 
-
         items = soup.find_all(
             "item"
         )
@@ -246,21 +272,9 @@ def get_feed(source, data):
 
         for item in items[:10]:
 
-
-            title_tag = item.find(
-                "title"
-            )
-
-
-            link_tag = item.find(
-                "link"
-            )
-
-
-            description_tag = item.find(
-                "description"
-            )
-
+            title_tag = item.find("title")
+            link_tag = item.find("link")
+            description_tag = item.find("description")
 
 
             title = clean_text(
@@ -270,29 +284,18 @@ def get_feed(source, data):
             )
 
 
-
             link = (
-
                 link_tag.text.strip()
-
                 if link_tag
-
                 else ""
-
             )
-
 
 
             description = clean_text(
-
                 description_tag.text
-
                 if description_tag
-
                 else ""
-
             )
-
 
 
             if title and link:
@@ -307,38 +310,35 @@ def get_feed(source, data):
                 )
 
 
-
                 news.append({
 
                     "id":
                     create_id(link),
 
-
                     "source":
                     source,
-
 
                     "category":
                     data["category"],
 
-
                     "title":
                     title,
 
-
                     "description":
-                    description[:600],
-
+                    description[:800],
 
                     "link":
                     link,
-
 
                     "impact":
                     check_impact(
                         full_text
                     ),
 
+                    "urgent":
+                    check_urgent(
+                        full_text
+                    ),
 
                     "time":
                     datetime.now().isoformat()
@@ -346,14 +346,11 @@ def get_feed(source, data):
                 })
 
 
-
     except Exception as e:
-
 
         print(
             f"خطا در {source}: {e}"
         )
-
 
 
     return news
@@ -371,24 +368,19 @@ def get_news(limit=50):
 
     for source, data in NEWS_SOURCES.items():
 
-
         result = get_feed(
             source,
             data
         )
 
 
-
         for item in result:
 
-
             if item["id"] not in seen:
-
 
                 all_news.append(
                     item
                 )
-
 
                 seen.append(
                     item["id"]
@@ -402,13 +394,16 @@ def get_news(limit=50):
 
 
 
+    # اولویت:
+    # فوری > مهم > عادی
+
     all_news.sort(
-
         key=lambda x:
-        x["impact"],
-
+        (
+            x["urgent"],
+            x["impact"]
+        ),
         reverse=True
-
     )
 
 
@@ -418,12 +413,9 @@ def get_news(limit=50):
 
 
 
-
 if __name__ == "__main__":
 
-
     news = get_news()
-
 
 
     print(
@@ -431,41 +423,33 @@ if __name__ == "__main__":
     )
 
 
-
     for item in news:
 
-
         print("\n🆕 خبر جدید")
-
 
         print(
             "📂 دسته:",
             item["category"]
         )
 
-
         print(
-            "📰 منبع:",
-            item["source"]
+            "🚨 فوری:",
+            item["urgent"]
         )
 
-
         print(
-            "🚨 مهم:",
+            "⚠️ مهم:",
             item["impact"]
         )
-
 
         print(
             "عنوان:",
             item["title"]
         )
 
-
         print(
             "خلاصه:",
             item["description"]
         )
-
 
         print("-" * 50)
