@@ -1,4 +1,5 @@
 from deep_translator import GoogleTranslator
+import re
 
 
 PROTECTED_TERMS = {
@@ -19,6 +20,7 @@ PROTECTED_TERMS = {
     "Toncoin": "تون‌کوین",
     "Tether": "تتر",
     "USDT": "USDT",
+
     "ETF": "ETF",
     "NFT": "NFT",
     "DeFi": "دیفای",
@@ -28,78 +30,151 @@ PROTECTED_TERMS = {
     "Exchange": "صرافی",
     "Token": "توکن",
 
-    # Financial
-    "Federal Reserve": "فدرال رزرو",
+
+    # Finance
+    "Federal Reserve": "فدرال رزرو آمریکا",
+    "Fed": "فدرال رزرو آمریکا",
     "Jerome Powell": "جروم پاول",
     "Donald Trump": "دونالد ترامپ",
     "White House": "کاخ سفید",
-    "SEC": "SEC",
-    "CFTC": "CFTC",
-    "Fed": "فدرال رزرو",
+
+    "SEC": "کمیسیون بورس آمریکا (SEC)",
+    "CFTC": "کمیسیون معاملات آتی کالا آمریکا (CFTC)",
+
     "Bitcoin ETF": "ETF بیت‌کوین",
-    "Ethereum ETF": "ETF اتریوم"
+    "Ethereum ETF": "ETF اتریوم",
+
+    "interest rate": "نرخ بهره",
+    "rate hike": "افزایش نرخ بهره",
+    "rate cut": "کاهش نرخ بهره",
+    "bond traders": "معامله‌گران اوراق قرضه",
+    "bond market": "بازار اوراق قرضه",
+    "yield": "بازده اوراق قرضه",
+    "inflation": "تورم",
+    "recession": "رکود اقتصادی"
 
 }
+
 
 
 REPLACE_WORDS = {
 
-    "بیسکویت": "",
-    "کاهش گوشه": "دستکاری بازار",
-    "گوشه بازار": "دستکاری بازار",
+    "در حاشیه": "در حالت انتظار",
+    "افزایش نرخ": "افزایش نرخ بهره",
+    "کاهش نرخ": "کاهش نرخ بهره",
+
     "بازارهای پیش بینی": "بازارهای پیش‌بینی",
-    "بازار پیش بینی": "بازار پیش‌بینی",
-    "خود گواهی": "خوداظهاری",
-    "خود گواهی‌نامه": "خوداظهاری",
-    "قراردادهای رویداد": "قراردادهای مبتنی بر رویداد",
-    "قرارداد رویداد": "قرارداد مبتنی بر رویداد",
+
     "نهاد تنظیم کننده": "نهاد نظارتی",
-    "تنظیم کننده": "نهاد نظارتی"
+    "تنظیم کننده": "نهاد نظارتی",
+
+    "قراردادهای رویداد": "قراردادهای مبتنی بر رویداد",
+
+    "بیسکویت": "",
 
 }
+
 
 
 def protect_terms(text):
 
     protected = {}
 
-    for i, (key, value) in enumerate(PROTECTED_TERMS.items()):
+    counter = 0
 
-        if key.lower() in text.lower():
 
-            marker = f"__TERM{i}__"
+    for key, value in PROTECTED_TERMS.items():
 
-            text = text.replace(key, marker)
+        pattern = re.compile(
+            re.escape(key),
+            re.IGNORECASE
+        )
+
+
+        if pattern.search(text):
+
+            marker = f"TERM{counter}X"
+
+            text = pattern.sub(
+                marker,
+                text
+            )
 
             protected[marker] = value
 
+            counter += 1
+
+
     return text, protected
+
+
 
 
 def restore_terms(text, protected):
 
     for marker, value in protected.items():
 
-        text = text.replace(marker, value)
+        text = text.replace(
+            marker,
+            value
+        )
 
     return text
 
 
+
+
 def clean_text(text):
+
+    if not text:
+        return ""
+
 
     for wrong, correct in REPLACE_WORDS.items():
 
-        text = text.replace(wrong, correct)
+        text = text.replace(
+            wrong,
+            correct
+        )
 
-    while "  " in text:
 
-        text = text.replace("  ", " ")
+    text = re.sub(
+        r"\s+",
+        " ",
+        text
+    )
 
-    text = text.replace(" ،", "،")
-    text = text.replace(" .", ".")
-    text = text.replace(" :", ":")
+
+    text = text.replace(
+        " ،",
+        "،"
+    )
+
+    text = text.replace(
+        " .",
+        "."
+    )
+
+    text = text.replace(
+        " :",
+        ":"
+    )
+
 
     return text.strip()
+
+
+
+
+def shorten(text, limit=500):
+
+    if len(text) <= limit:
+        return text
+
+
+    return text[:limit] + "..."
+
+
 
 
 def translate_text(text):
@@ -108,45 +183,67 @@ def translate_text(text):
 
         return ""
 
+
     original = text
+
 
     try:
 
-        text, protected = protect_terms(text)
+        text, protected = protect_terms(
+            text
+        )
+
 
         translated = GoogleTranslator(
             source="en",
             target="fa"
-        ).translate(text)
+        ).translate(
+            text
+        )
+
 
         translated = restore_terms(
             translated,
             protected
         )
 
+
         translated = clean_text(
             translated
         )
 
+
+        translated = shorten(
+            translated
+        )
+
+
         return translated
+
+
 
     except Exception as e:
 
-        print("خطا در ترجمه:", e)
+        print(
+            "خطا در ترجمه:",
+            e
+        )
+
 
         return original
 
 
+
+
 if __name__ == "__main__":
 
-    test = (
-        "The CFTC warned prediction markets about event contracts. "
-        "Donald Trump met Federal Reserve officials. "
-        "Bitcoin ETF demand increased while Ethereum and Solana prices rose."
+
+    test = """
+    Bond traders are watching the Federal Reserve decision.
+    Bitcoin ETF demand increased while Ethereum prices rose.
+    """
+
+
+    print(
+        translate_text(test)
     )
-
-    print("English:\n")
-    print(test)
-
-    print("\nPersian:\n")
-    print(translate_text(test))
