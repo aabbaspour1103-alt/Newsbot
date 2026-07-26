@@ -24,10 +24,6 @@ NEWS_SOURCES = {
         "url": "https://cryptoslate.com/feed/",
     },
 
-    "Bitcoin Magazine": {
-        "url": "https://bitcoinmagazine.com/.rss/full/",
-    },
-
     "NewsBTC": {
         "url": "https://www.newsbtc.com/feed/",
     },
@@ -39,7 +35,15 @@ NEWS_SOURCES = {
 
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0"
+
+    "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 "
+        "Chrome/120.0 Safari/537.36",
+
+    "Accept":
+        "application/rss+xml, application/xml, text/xml"
+
 }
 
 
@@ -52,10 +56,17 @@ def load_seen():
     if os.path.exists(SEEN_FILE):
 
         try:
-            with open(SEEN_FILE, "r", encoding="utf-8") as f:
+
+            with open(
+                SEEN_FILE,
+                "r",
+                encoding="utf-8"
+            ) as f:
+
                 return json.load(f)
 
         except:
+
             return []
 
     return []
@@ -64,7 +75,12 @@ def load_seen():
 
 def save_seen(data):
 
-    with open(SEEN_FILE, "w", encoding="utf-8") as f:
+    with open(
+        SEEN_FILE,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
         json.dump(
             data[-500:],
             f,
@@ -108,7 +124,7 @@ def get_feed(source, url):
         response = requests.get(
             url,
             headers=HEADERS,
-            timeout=15
+            timeout=20
         )
 
         response.raise_for_status()
@@ -116,7 +132,7 @@ def get_feed(source, url):
 
         soup = BeautifulSoup(
             response.content,
-            "xml"
+            "lxml-xml"
         )
 
 
@@ -127,38 +143,47 @@ def get_feed(source, url):
 
         for item in items[:10]:
 
+            title_tag = item.find(
+                "title"
+            )
+
+            link_tag = item.find(
+                "link"
+            )
+
+
             title = clean_text(
-                item.title.text
-                if item.title
+                title_tag.text
+                if title_tag
                 else ""
             )
 
 
             link = (
-                item.link.text.strip()
-                if item.link
+                link_tag.text.strip()
+                if link_tag
                 else ""
             )
 
 
             if title and link:
 
-                news_id = create_id(
-                    link
-                )
-
-
                 news.append({
 
-                    "id": news_id,
+                    "id":
+                        create_id(link),
 
-                    "source": source,
+                    "source":
+                        source,
 
-                    "title": title,
+                    "title":
+                        title,
 
-                    "link": link,
+                    "link":
+                        link,
 
-                    "time": datetime.now().isoformat()
+                    "time":
+                        datetime.now().isoformat()
 
                 })
 
@@ -188,6 +213,7 @@ def get_news(limit=50):
             data["url"]
         )
 
+
         for item in result:
 
             if item["id"] not in seen:
@@ -199,7 +225,9 @@ def get_news(limit=50):
                 )
 
 
-    save_seen(seen)
+    save_seen(
+        seen
+    )
 
 
     return all_news[:limit]
@@ -207,7 +235,6 @@ def get_news(limit=50):
 
 
 if __name__ == "__main__":
-
 
     news = get_news()
 
@@ -218,7 +245,6 @@ if __name__ == "__main__":
 
 
     for item in news:
-
 
         print("\n🆕 خبر جدید")
 
