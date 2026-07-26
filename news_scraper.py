@@ -7,20 +7,43 @@ import re
 
 NEWS_SOURCES = {
 
+    # Crypto
     "CoinDesk": "https://www.coindesk.com/arc/outboundfeeds/rss/",
     "Cointelegraph": "https://cointelegraph.com/rss",
     "Decrypt": "https://decrypt.co/feed",
+    "The Block": "https://www.theblock.co/rss.xml",
+    "CryptoSlate": "https://cryptoslate.com/feed/",
+    "Bitcoin Magazine": "https://bitcoinmagazine.com/.rss/full/",
+
+    # Markets
     "Bloomberg": "https://feeds.bloomberg.com/markets/news.rss",
     "CNBC": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
     "Reuters": "https://feeds.reuters.com/reuters/businessNews",
-    "The Block": "https://www.theblock.co/rss.xml",
-    "CryptoSlate": "https://cryptoslate.com/feed/",
-    "Bitcoin Magazine": "https://bitcoinmagazine.com/.rss/full/"
+
 }
 
 
 SAVE_FILE = "sent_news.json"
 
+
+URGENT_WORDS = [
+
+    "Trump",
+    "Donald Trump",
+    "Federal Reserve",
+    "Fed",
+    "interest rate",
+    "rate cut",
+    "Bitcoin ETF",
+    "SEC",
+    "hack",
+    "crash",
+    "war",
+    "sanctions",
+    "emergency",
+    "breaking"
+
+]
 
 
 def load_sent():
@@ -53,7 +76,7 @@ def save_sent(data):
     ) as f:
 
         json.dump(
-            data,
+            data[-1000:],
             f,
             ensure_ascii=False,
             indent=2
@@ -73,7 +96,7 @@ def clean_text(text):
     )
 
     text = re.sub(
-        "\s+",
+        r"\s+",
         " ",
         text
     )
@@ -82,11 +105,33 @@ def clean_text(text):
 
 
 
+def shorten(text, limit=250):
+
+    if len(text) <= limit:
+        return text
+
+    return text[:limit] + "..."
+
+
+
 def news_id(text):
 
     return hashlib.md5(
         text.encode("utf-8")
     ).hexdigest()
+
+
+
+def check_priority(text):
+
+    text = text.lower()
+
+    for word in URGENT_WORDS:
+
+        if word.lower() in text:
+            return "urgent"
+
+    return "normal"
 
 
 
@@ -129,9 +174,8 @@ def get_news(limit=10):
                 )
 
 
-                link = item.get(
-                    "link",
-                    ""
+                description = shorten(
+                    description
                 )
 
 
@@ -144,6 +188,11 @@ def get_news(limit=10):
                     continue
 
 
+                priority = check_priority(
+                    title + " " + description
+                )
+
+
                 news.append({
 
                     "source": source,
@@ -152,7 +201,12 @@ def get_news(limit=10):
 
                     "description": description,
 
-                    "link": link
+                    "priority": priority,
+
+                    "link": item.get(
+                        "link",
+                        ""
+                    )
 
                 })
 
@@ -174,9 +228,7 @@ def get_news(limit=10):
 
 
 
-    save_sent(
-        sent[-1000:]
-    )
+    save_sent(sent)
 
 
     return news
