@@ -3,11 +3,11 @@ import hashlib
 import json
 import os
 import re
+from datetime import datetime, timezone
 
 
 NEWS_SOURCES = {
 
-    # Crypto
     "CoinDesk": "https://www.coindesk.com/arc/outboundfeeds/rss/",
     "Cointelegraph": "https://cointelegraph.com/rss",
     "Decrypt": "https://decrypt.co/feed",
@@ -15,11 +15,9 @@ NEWS_SOURCES = {
     "CryptoSlate": "https://cryptoslate.com/feed/",
     "Bitcoin Magazine": "https://bitcoinmagazine.com/.rss/full/",
 
-    # Markets
     "Bloomberg": "https://feeds.bloomberg.com/markets/news.rss",
     "CNBC": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
     "Reuters": "https://feeds.reuters.com/reuters/businessNews",
-
 }
 
 
@@ -27,9 +25,7 @@ SAVE_FILE = "sent_news.json"
 
 
 URGENT_WORDS = [
-
     "Trump",
-    "Donald Trump",
     "Federal Reserve",
     "Fed",
     "interest rate",
@@ -40,9 +36,7 @@ URGENT_WORDS = [
     "crash",
     "war",
     "sanctions",
-    "emergency",
     "breaking"
-
 ]
 
 
@@ -52,29 +46,17 @@ def load_sent():
         return []
 
     try:
-
-        with open(
-            SAVE_FILE,
-            "r",
-            encoding="utf-8"
-        ) as f:
-
+        with open(SAVE_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
 
     except:
-
         return []
 
 
 
 def save_sent(data):
 
-    with open(
-        SAVE_FILE,
-        "w",
-        encoding="utf-8"
-    ) as f:
-
+    with open(SAVE_FILE, "w", encoding="utf-8") as f:
         json.dump(
             data[-1000:],
             f,
@@ -89,23 +71,14 @@ def clean_text(text):
     if not text:
         return ""
 
-    text = re.sub(
-        "<.*?>",
-        "",
-        text
-    )
-
-    text = re.sub(
-        r"\s+",
-        " ",
-        text
-    )
+    text = re.sub("<.*?>", "", text)
+    text = re.sub(r"\s+", " ", text)
 
     return text.strip()
 
 
 
-def shorten(text, limit=250):
+def shorten(text, limit=300):
 
     if len(text) <= limit:
         return text
@@ -135,6 +108,35 @@ def check_priority(text):
 
 
 
+def is_recent(item):
+
+    try:
+
+        if hasattr(item, "published_parsed"):
+
+            published = datetime(
+                *item.published_parsed[:6],
+                tzinfo=timezone.utc
+            )
+
+            now = datetime.now(timezone.utc)
+
+            hours = (
+                now - published
+            ).total_seconds() / 3600
+
+
+            return hours <= 48
+
+
+    except:
+        pass
+
+
+    return False
+
+
+
 def get_news(limit=10):
 
     sent = load_sent()
@@ -149,17 +151,25 @@ def get_news(limit=10):
             feed = feedparser.parse(url)
 
 
-            for item in feed.entries[:10]:
+            for item in feed.entries[:15]:
+
+                if not is_recent(item):
+                    continue
+
 
                 title = clean_text(
-                    item.get(
-                        "title",
-                        ""
-                    )
+                    item.get("title", "")
                 )
 
 
                 if not title:
+                    continue
+
+
+                uid = news_id(title)
+
+
+                if uid in sent:
                     continue
 
 
@@ -174,52 +184,26 @@ def get_news(limit=10):
                 )
 
 
-                description = shorten(
-                    description
-                )
-
-
-                uid = news_id(
-                    title
-                )
-
-
-                if uid in sent:
-                    continue
-
-
-                priority = check_priority(
-                    title + " " + description
-                )
-
-
                 news.append({
 
                     "source": source,
 
                     "title": title,
 
-                    "description": description,
+                    "description": shorten(description),
 
-                    "priority": priority,
+                    "priority": check_priority(
+                        title + " " + description
+                    ),
 
                     "link": item.get(
                         "link",
                         ""
-                    )
+                    ),
+
+                    "id": uid
 
                 })
-
-
-                sent.append(uid)
-
-
-                if len(news) >= limit:
-                    break
-
-
-            if len(news) >= limit:
-                break
 
 
         except Exception:
@@ -227,8 +211,8 @@ def get_news(limit=10):
             continue
 
 
-
-    save_sent(sent)
+    # جدیدترین‌ها اول
+    news = news[:limit]
 
 
     return news
