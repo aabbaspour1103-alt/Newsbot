@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 
-
 NEWS_SOURCES = {
 
     "CoinDesk": {
@@ -30,11 +29,33 @@ NEWS_SOURCES = {
         "url": "https://cryptoslate.com/feed/"
     },
 
+    "The Block": {
+        "category": "Crypto",
+        "url": "https://www.theblock.co/rss.xml"
+    },
+
+    "Bitcoin Magazine": {
+        "category": "Crypto",
+        "url": "https://bitcoinmagazine.com/.rss/full/"
+    },
+
 
     "Reuters Market": {
-        "category": "USA Market",
+        "category": "Global Market",
         "url":
         "https://news.google.com/rss/search?q=Reuters+market+economy+Fed"
+    },
+
+    "Bloomberg Market": {
+        "category": "Global Market",
+        "url":
+        "https://news.google.com/rss/search?q=Bloomberg+markets+economy"
+    },
+
+    "MarketWatch": {
+        "category": "USA Market",
+        "url":
+        "https://news.google.com/rss/search?q=MarketWatch+stocks+Federal+Reserve"
     },
 
     "CNBC": {
@@ -43,22 +64,16 @@ NEWS_SOURCES = {
         "https://news.google.com/rss/search?q=CNBC+markets+stocks"
     },
 
-    "Yahoo Finance": {
-        "category": "USA Market",
-        "url":
-        "https://news.google.com/rss/search?q=Yahoo+Finance+Federal+Reserve"
-    },
 
-
-    "Trump News": {
-        "category": "Trump Alert",
+    "Trump Alert": {
+        "category": "Trump",
         "url":
         "https://news.google.com/rss/search?q=Donald+Trump+White+House"
     },
 
 
-    "Fed News": {
-        "category": "Trump/Fed Alert",
+    "Federal Reserve": {
+        "category": "FED",
         "url":
         "https://news.google.com/rss/search?q=Federal+Reserve+Jerome+Powell+interest+rates"
     }
@@ -67,8 +82,6 @@ NEWS_SOURCES = {
 
 
 
-# خبرهای مهم
-
 MARKET_KEYWORDS = [
 
     "Trump",
@@ -76,25 +89,25 @@ MARKET_KEYWORDS = [
     "White House",
     "Federal Reserve",
     "Fed",
-    "Jerome Powell",
+    "Powell",
     "interest rate",
     "inflation",
     "CPI",
     "SEC",
     "ETF",
     "Bitcoin",
+    "Ethereum",
     "crypto",
     "tariff",
     "sanction",
     "oil",
     "gold",
-    "dollar"
+    "dollar",
+    "stock",
+    "market"
 
 ]
 
-
-
-# خبرهای بسیار مهم و فوری
 
 URGENT_KEYWORDS = [
 
@@ -125,10 +138,10 @@ URGENT_KEYWORDS = [
 HEADERS = {
 
     "User-Agent":
-    "Mozilla/5.0 Chrome/120 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
 
     "Accept":
-    "application/rss+xml, application/xml"
+    "application/rss+xml, application/xml,text/xml"
 
 }
 
@@ -170,7 +183,7 @@ def save_seen(data):
     ) as f:
 
         json.dump(
-            data[-500:],
+            data[-1000:],
             f,
             ensure_ascii=False,
             indent=2
@@ -179,9 +192,11 @@ def save_seen(data):
 
 
 
-def create_id(text):
+def create_id(title, link):
 
-    return hashlib.md5(
+    text = title + link
+
+    return hashlib.sha256(
         text.encode("utf-8")
     ).hexdigest()
 
@@ -210,32 +225,9 @@ def check_keyword(text, keywords):
 
     text = text.lower()
 
-    for word in keywords:
-
-        if word.lower() in text:
-
-            return True
-
-    return False
-
-
-
-
-def check_impact(text):
-
-    return check_keyword(
-        text,
-        MARKET_KEYWORDS
-    )
-
-
-
-
-def check_urgent(text):
-
-    return check_keyword(
-        text,
-        URGENT_KEYWORDS
+    return any(
+        word.lower() in text
+        for word in keywords
     )
 
 
@@ -245,105 +237,89 @@ def get_feed(source, data):
 
     news = []
 
-
     try:
 
         response = requests.get(
             data["url"],
             headers=HEADERS,
-            timeout=20
+            timeout=25
         )
 
         response.raise_for_status()
 
 
-
         soup = BeautifulSoup(
             response.content,
-            "lxml-xml"
+            "xml"
         )
 
 
-        items = soup.find_all(
-            "item"
-        )
-
-
-
-        for item in items[:10]:
-
-            title_tag = item.find("title")
-            link_tag = item.find("link")
-            description_tag = item.find("description")
-
+        for item in soup.find_all("item")[:15]:
 
             title = clean_text(
-                title_tag.text
-                if title_tag
+                item.title.text
+                if item.title
                 else ""
             )
 
 
             link = (
-                link_tag.text.strip()
-                if link_tag
+                item.link.text.strip()
+                if item.link
                 else ""
             )
 
 
             description = clean_text(
-                description_tag.text
-                if description_tag
+                item.description.text
+                if item.description
                 else ""
             )
 
 
-            if title and link:
+            if not title or not link:
+                continue
 
 
-                full_text = (
-                    title
-                    +
-                    " "
-                    +
-                    description
-                )
+            text = title + " " + description
 
 
-                news.append({
+            news.append({
 
-                    "id":
-                    create_id(link),
+                "id":
+                create_id(title, link),
 
-                    "source":
-                    source,
+                "source":
+                source,
 
-                    "category":
-                    data["category"],
+                "category":
+                data["category"],
 
-                    "title":
-                    title,
+                "title":
+                title,
 
-                    "description":
-                    description[:800],
+                "description":
+                description[:700],
 
-                    "link":
-                    link,
+                "link":
+                link,
 
-                    "impact":
-                    check_impact(
-                        full_text
-                    ),
+                "urgent":
+                check_keyword(
+                    text,
+                    URGENT_KEYWORDS
+                ),
 
-                    "urgent":
-                    check_urgent(
-                        full_text
-                    ),
+                "impact":
+                check_keyword(
+                    text,
+                    MARKET_KEYWORDS
+                ),
 
-                    "time":
-                    datetime.now().isoformat()
+                "time":
+                datetime.utcnow().isoformat()
 
-                })
+            })
 
 
     except Exception as e:
@@ -365,37 +341,28 @@ def get_news(limit=50):
     seen = load_seen()
 
 
-
     for source, data in NEWS_SOURCES.items():
 
-        result = get_feed(
+        feeds = get_feed(
             source,
             data
         )
 
 
-        for item in result:
+        for item in feeds:
 
             if item["id"] not in seen:
 
-                all_news.append(
-                    item
-                )
+                all_news.append(item)
 
                 seen.append(
                     item["id"]
                 )
 
 
-
-    save_seen(
-        seen
-    )
+    save_seen(seen)
 
 
-
-    # اولویت:
-    # فوری > مهم > عادی
 
     all_news.sort(
         key=lambda x:
@@ -405,7 +372,6 @@ def get_news(limit=50):
         ),
         reverse=True
     )
-
 
 
     return all_news[:limit]
@@ -419,37 +385,35 @@ if __name__ == "__main__":
 
 
     print(
-        f"تعداد خبرهای دریافت شده: {len(news)}"
+        f"تعداد خبرهای جدید: {len(news)}"
     )
 
 
-    for item in news:
+    for n in news:
 
-        print("\n🆕 خبر جدید")
+        print("\n🆕 خبر")
 
         print(
-            "📂 دسته:",
-            item["category"]
+            "📂",
+            n["category"]
         )
 
         print(
             "🚨 فوری:",
-            item["urgent"]
+            n["urgent"]
         )
 
         print(
             "⚠️ مهم:",
-            item["impact"]
+            n["impact"]
         )
 
         print(
-            "عنوان:",
-            item["title"]
+            n["title"]
         )
 
         print(
-            "خلاصه:",
-            item["description"]
+            n["link"]
         )
 
-        print("-" * 50)
+        print("-"*50)
