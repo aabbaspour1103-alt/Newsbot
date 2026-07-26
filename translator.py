@@ -30,7 +30,6 @@ PROTECTED_TERMS = {
     "Exchange": "صرافی",
     "Token": "توکن",
 
-
     # Finance
     "Federal Reserve": "فدرال رزرو آمریکا",
     "Fed": "فدرال رزرو آمریکا",
@@ -41,15 +40,15 @@ PROTECTED_TERMS = {
     "SEC": "کمیسیون بورس آمریکا (SEC)",
     "CFTC": "کمیسیون معاملات آتی کالا آمریکا (CFTC)",
 
-    "Bitcoin ETF": "ETF بیت‌کوین",
-    "Ethereum ETF": "ETF اتریوم",
-
     "interest rate": "نرخ بهره",
     "rate hike": "افزایش نرخ بهره",
     "rate cut": "کاهش نرخ بهره",
+
     "bond traders": "معامله‌گران اوراق قرضه",
     "bond market": "بازار اوراق قرضه",
+    "bond yields": "بازده اوراق قرضه",
     "yield": "بازده اوراق قرضه",
+
     "inflation": "تورم",
     "recession": "رکود اقتصادی"
 
@@ -59,18 +58,16 @@ PROTECTED_TERMS = {
 
 REPLACE_WORDS = {
 
-    "در حاشیه": "در حالت انتظار",
-    "افزایش نرخ": "افزایش نرخ بهره",
-    "کاهش نرخ": "کاهش نرخ بهره",
+    "بهره بهره": "بهره",
+    "اوراق قرضهs": "اوراق قرضه",
+    "در به عنوان": "در آستانه",
+    "به عنوان خطرات": "با افزایش نگرانی‌ها درباره",
+    "سوار شد": "آماده شد",
+    "Edge": "",
 
     "بازارهای پیش بینی": "بازارهای پیش‌بینی",
-
     "نهاد تنظیم کننده": "نهاد نظارتی",
     "تنظیم کننده": "نهاد نظارتی",
-
-    "قراردادهای رویداد": "قراردادهای مبتنی بر رویداد",
-
-    "بیسکویت": "",
 
 }
 
@@ -85,19 +82,15 @@ def protect_terms(text):
 
     for key, value in PROTECTED_TERMS.items():
 
-        pattern = re.compile(
-            re.escape(key),
-            re.IGNORECASE
-        )
+        if key.lower() in text.lower():
 
+            marker = f"ZZTERM{counter}ZZ"
 
-        if pattern.search(text):
-
-            marker = f"TERM{counter}X"
-
-            text = pattern.sub(
+            text = re.sub(
+                key,
                 marker,
-                text
+                text,
+                flags=re.IGNORECASE
             )
 
             protected[marker] = value
@@ -106,7 +99,6 @@ def protect_terms(text):
 
 
     return text, protected
-
 
 
 
@@ -120,7 +112,6 @@ def restore_terms(text, protected):
         )
 
     return text
-
 
 
 
@@ -138,6 +129,28 @@ def clean_text(text):
         )
 
 
+    # حذف کلمات تکراری پشت سر هم
+    words = text.split()
+
+    result = []
+
+    for word in words:
+
+        if not result or word != result[-1]:
+            result.append(word)
+
+
+    text = " ".join(result)
+
+
+    # حذف حروف انگلیسی چسبیده به فارسی
+    text = re.sub(
+        r"([آ-ی])([a-zA-Z]+)",
+        r"\1",
+        text
+    )
+
+
     text = re.sub(
         r"\s+",
         " ",
@@ -150,14 +163,10 @@ def clean_text(text):
         "،"
     )
 
+
     text = text.replace(
         " .",
         "."
-    )
-
-    text = text.replace(
-        " :",
-        ":"
     )
 
 
@@ -165,15 +174,41 @@ def clean_text(text):
 
 
 
+def good_translation(text):
 
-def shorten(text, limit=500):
+    if not text:
+        return False
+
+
+    bad = [
+
+        "ZZTERM",
+        "undefined",
+        "None",
+        "در به عنوان",
+        "سوار شد"
+
+    ]
+
+
+    for item in bad:
+
+        if item in text:
+            return False
+
+
+    return len(text.split()) >= 3
+
+
+
+def shorten(text, limit=600):
 
     if len(text) <= limit:
+
         return text
 
 
     return text[:limit] + "..."
-
 
 
 
@@ -184,13 +219,13 @@ def translate_text(text):
         return ""
 
 
-    original = text
+    original = clean_text(text)
 
 
     try:
 
-        text, protected = protect_terms(
-            text
+        protected_text, protected = protect_terms(
+            original
         )
 
 
@@ -198,7 +233,7 @@ def translate_text(text):
             source="en",
             target="fa"
         ).translate(
-            text
+            protected_text
         )
 
 
@@ -213,13 +248,14 @@ def translate_text(text):
         )
 
 
-        translated = shorten(
+        if not good_translation(translated):
+
+            return original
+
+
+        return shorten(
             translated
         )
-
-
-        return translated
-
 
 
     except Exception as e:
@@ -229,20 +265,16 @@ def translate_text(text):
             e
         )
 
-
         return original
-
 
 
 
 if __name__ == "__main__":
 
-
     test = """
     Bond traders are watching the Federal Reserve decision.
     Bitcoin ETF demand increased while Ethereum prices rose.
     """
-
 
     print(
         translate_text(test)
