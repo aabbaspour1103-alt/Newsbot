@@ -209,7 +209,8 @@ def get_feed(source, data):
 
         for item in items[:10]:
 
-            ifdef get_news(limit=50):
+            if
+            def get_news(limit=50):
 
     news = []
 
