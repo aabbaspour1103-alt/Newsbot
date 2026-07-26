@@ -2,11 +2,14 @@ import requests
 import json
 import os
 import hashlib
+
 from bs4 import BeautifulSoup
 from datetime import datetime
 
 
+
 NEWS_SOURCES = {
+
 
     # Crypto
 
@@ -15,20 +18,24 @@ NEWS_SOURCES = {
         "url": "https://www.coindesk.com/arc/outboundfeeds/rss/"
     },
 
+
     "Cointelegraph": {
         "category": "Crypto",
         "url": "https://cointelegraph.com/rss"
     },
+
 
     "Decrypt": {
         "category": "Crypto",
         "url": "https://decrypt.co/feed"
     },
 
+
     "CryptoSlate": {
         "category": "Crypto",
         "url": "https://cryptoslate.com/feed/"
     },
+
 
 
     # USA Market
@@ -54,7 +61,8 @@ NEWS_SOURCES = {
     },
 
 
-    # Trump / Politics
+
+    # Trump / Fed
 
     "Trump News": {
         "category": "Trump Alert",
@@ -70,6 +78,7 @@ NEWS_SOURCES = {
     }
 
 }
+
 
 
 
@@ -102,16 +111,17 @@ MARKET_KEYWORDS = [
 HEADERS = {
 
     "User-Agent":
-        "Mozilla/5.0 Chrome/120 Safari/537.36",
+    "Mozilla/5.0 Chrome/120 Safari/537.36",
 
     "Accept":
-        "application/rss+xml, application/xml"
+    "application/rss+xml, application/xml"
 
 }
 
 
 
 SEEN_FILE = "seen_news.json"
+
 
 
 
@@ -133,7 +143,9 @@ def load_seen():
 
             return []
 
+
     return []
+
 
 
 
@@ -154,6 +166,7 @@ def save_seen(data):
 
 
 
+
 def create_id(text):
 
     return hashlib.md5(
@@ -162,15 +175,18 @@ def create_id(text):
 
 
 
+
 def clean_text(text):
 
     if not text:
         return ""
 
+
     soup = BeautifulSoup(
         text,
         "html.parser"
     )
+
 
     return soup.get_text(
         " ",
@@ -179,23 +195,28 @@ def clean_text(text):
 
 
 
-def check_impact(title):
 
-    title_lower = title.lower()
+def check_impact(text):
+
+    text = text.lower()
+
 
     for word in MARKET_KEYWORDS:
 
-        if word.lower() in title_lower:
+        if word.lower() in text:
 
             return True
 
+
     return False
+
 
 
 
 def get_feed(source, data):
 
     news = []
+
 
     try:
 
@@ -205,7 +226,9 @@ def get_feed(source, data):
             timeout=20
         )
 
+
         response.raise_for_status()
+
 
 
         soup = BeautifulSoup(
@@ -214,13 +237,30 @@ def get_feed(source, data):
         )
 
 
-        items = soup.find_all("item")
+
+        items = soup.find_all(
+            "item"
+        )
+
 
 
         for item in items[:10]:
 
-            title_tag = item.find("title")
-            link_tag = item.find("link")
+
+            title_tag = item.find(
+                "title"
+            )
+
+
+            link_tag = item.find(
+                "link"
+            )
+
+
+            description_tag = item.find(
+                "description"
+            )
+
 
 
             title = clean_text(
@@ -230,34 +270,75 @@ def get_feed(source, data):
             )
 
 
+
             link = (
+
                 link_tag.text.strip()
+
                 if link_tag
+
                 else ""
+
             )
 
 
+
+            description = clean_text(
+
+                description_tag.text
+
+                if description_tag
+
+                else ""
+
+            )
+
+
+
             if title and link:
+
+
+                full_text = (
+                    title
+                    +
+                    " "
+                    +
+                    description
+                )
+
+
 
                 news.append({
 
                     "id":
                     create_id(link),
 
+
                     "source":
                     source,
+
 
                     "category":
                     data["category"],
 
+
                     "title":
                     title,
+
+
+                    "description":
+                    description[:600],
+
 
                     "link":
                     link,
 
+
                     "impact":
-                    check_impact(title),
+                    check_impact(
+                        full_text
+                    ),
+
 
                     "time":
                     datetime.now().isoformat()
@@ -265,14 +346,18 @@ def get_feed(source, data):
                 })
 
 
+
     except Exception as e:
+
 
         print(
             f"خطا در {source}: {e}"
         )
 
 
+
     return news
+
 
 
 
@@ -283,7 +368,9 @@ def get_news(limit=50):
     seen = load_seen()
 
 
+
     for source, data in NEWS_SOURCES.items():
+
 
         result = get_feed(
             source,
@@ -291,18 +378,22 @@ def get_news(limit=50):
         )
 
 
+
         for item in result:
 
 
             if item["id"] not in seen:
 
+
                 all_news.append(
                     item
                 )
 
+
                 seen.append(
                     item["id"]
                 )
+
 
 
     save_seen(
@@ -310,21 +401,29 @@ def get_news(limit=50):
     )
 
 
-    # خبرهای مهم اول نمایش داده شوند
 
     all_news.sort(
-        key=lambda x: x["impact"],
+
+        key=lambda x:
+        x["impact"],
+
         reverse=True
+
     )
+
 
 
     return all_news[:limit]
 
 
 
+
+
 if __name__ == "__main__":
 
+
     news = get_news()
+
 
 
     print(
@@ -332,33 +431,41 @@ if __name__ == "__main__":
     )
 
 
+
     for item in news:
 
+
         print("\n🆕 خبر جدید")
+
 
         print(
             "📂 دسته:",
             item["category"]
         )
 
+
         print(
             "📰 منبع:",
             item["source"]
         )
 
+
         print(
-            "🚨 مهم بازار:",
+            "🚨 مهم:",
             item["impact"]
         )
 
+
         print(
-            "🇮🇷 عنوان:",
+            "عنوان:",
             item["title"]
         )
 
+
         print(
-            "🔗 لینک:",
-            item["link"]
+            "خلاصه:",
+            item["description"]
         )
 
-        print("-"*50)
+
+        print("-" * 50)
