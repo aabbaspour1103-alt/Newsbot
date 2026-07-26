@@ -39,6 +39,7 @@ NEWS_SOURCES = {
         "url": "https://bitcoinmagazine.com/.rss/full/"
     },
 
+
     "Reuters Market": {
         "category": "Global Market",
         "url": "https://news.google.com/rss/search?q=Reuters+market+economy+Fed"
@@ -84,10 +85,12 @@ NEWS_SOURCES = {
         "url": "https://news.google.com/rss/search?q=Investing.com+markets"
     },
 
+
     "Trump Alert": {
         "category": "Trump",
         "url": "https://news.google.com/rss/search?q=Donald+Trump+White+House"
     },
+
 
     "Federal Reserve": {
         "category": "FED",
@@ -95,6 +98,7 @@ NEWS_SOURCES = {
     }
 
 }
+
 
 
 MARKET_KEYWORDS = [
@@ -137,6 +141,7 @@ MARKET_KEYWORDS = [
 ]
 
 
+
 URGENT_KEYWORDS = [
 
     "breaking",
@@ -171,7 +176,7 @@ URGENT_KEYWORDS = [
 HEADERS = {
 
     "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
 
     "Accept":
     "application/rss+xml, application/xml,text/xml"
@@ -179,7 +184,8 @@ HEADERS = {
 }
 
 
-SEEN_FILE = "seen_news.json"def load_seen():
+SEEN_FILE = "seen_news.json"
+def load_seen():
 
     if os.path.exists(SEEN_FILE):
 
@@ -193,7 +199,7 @@ SEEN_FILE = "seen_news.json"def load_seen():
 
                 return json.load(f)
 
-        except:
+        except Exception:
 
             return []
 
@@ -201,28 +207,36 @@ SEEN_FILE = "seen_news.json"def load_seen():
 
 
 
-
 def save_seen(data):
 
-    with open(
-        SEEN_FILE,
-        "w",
-        encoding="utf-8"
-    ) as f:
+    try:
 
-        json.dump(
-            data[-1000:],
-            f,
-            ensure_ascii=False,
-            indent=2
-        )
+        with open(
+            SEEN_FILE,
+            "w",
+            encoding="utf-8"
+        ) as f:
 
+            json.dump(
+                data[-1000:],
+                f,
+                ensure_ascii=False,
+                indent=2
+            )
+
+    except Exception:
+
+        pass
 
 
 
 def create_id(title, link):
 
-    text = title.strip().lower()
+    text = (
+        title.strip().lower()
+        +
+        link.strip().lower()
+    )
 
     return hashlib.sha256(
         text.encode("utf-8")
@@ -230,10 +244,10 @@ def create_id(title, link):
 
 
 
-
 def clean_text(text):
 
     if not text:
+
         return ""
 
     soup = BeautifulSoup(
@@ -248,16 +262,27 @@ def clean_text(text):
 
 
 
-
 def check_keyword(text, keywords):
+
+    if not text:
+
+        return False
 
     text = text.lower()
 
-    return any(
-        word.lower() in text
-        for word in keywords
-    )
+    for word in keywords:
 
+        if word.lower() in text:
+
+            return True
+
+    return False
+
+
+
+def get_time():
+
+    return datetime.utcnow().isoformat()
 
 
 
@@ -275,71 +300,136 @@ def get_feed(source, data):
 
         response.raise_for_status()
 
+
         soup = BeautifulSoup(
             response.content,
             "xml"
         )
 
+
         items = soup.find_all("item")
 
+
         if not items:
+
             items = soup.find_all("entry")
+
+
 
         for item in items[:15]:
 
-            title = clean_text(
-                item.title.text
-                if item.title
-                else ""
-            )
+
+            title = ""
+
+            if item.title:
+
+                title = clean_text(
+                    item.title.text
+                )
+
 
             if len(title) < 20:
+
                 continue
+
+
+
+            link = ""
+
 
             if item.link:
 
+
                 if item.link.has_attr("href"):
+
                     link = item.link["href"]
 
                 else:
+
                     link = item.link.text.strip()
 
-            else:
-                link = ""
+
+
+            if not link:
+
+                continue
+
+
 
             description = ""
 
+
             if item.description:
+
                 description = clean_text(
                     item.description.text
                 )
 
+
             elif item.summary:
+
                 description = clean_text(
                     item.summary.text
                 )
 
-            if not link:
-                continue
 
-            text = title + " " + description
+
+            full_text = (
+                title
+                +
+                " "
+                +
+                description
+            )
+
+
 
             news.append({
 
-                "id":
-                create_id(title, link),
+                "id": create_id(
+                    title,
+                    link
+                ),
 
-                "source":
-                source,
+                "source": source,
 
-                "category":
-                data["category"],
+                "category": data["category"],
 
-                def get_news(limit=50):
+                "title": title,
+
+                "description": description[:500],
+
+                "link": link,
+
+                "urgent": check_keyword(
+                    full_text,
+                    URGENT_KEYWORDS
+                ),
+
+                "impact": check_keyword(
+                    full_text,
+                    MARKET_KEYWORDS
+                ),
+
+                "time": get_time()
+
+            })
+
+
+    except Exception as e:
+
+        print(
+            f"خطا در دریافت {source}: {e}"
+        )
+
+
+    return news
+    def get_news(limit=50):
 
     all_news = []
 
     seen = load_seen()
+
 
     for source, data in NEWS_SOURCES.items():
 
@@ -348,88 +438,304 @@ def get_feed(source, data):
             data
         )
 
+
         for item in feeds:
+
 
             if item["id"] not in seen:
 
+
                 all_news.append(item)
+
 
                 seen.append(
                     item["id"]
                 )
 
-    save_seen(seen)
+
+
+    save_seen(
+        seen
+    )
+
+
 
     all_news.sort(
+
         key=lambda x: (
+
             x["urgent"],
+
             x["impact"],
+
             x["time"]
+
         ),
+
         reverse=True
+
     )
+
+
 
     return all_news[:limit]
 
 
 
+def format_news(news):
+
+    result = []
+
+
+    for item in news:
+
+
+        result.append({
+
+            "source":
+            item["source"],
+
+
+            "category":
+            item["category"],
+
+
+            "title":
+            item["title"],
+
+
+            "description":
+            item["description"],
+
+
+            "link":
+            item["link"],
+
+
+            "urgent":
+            item["urgent"],
+
+
+            "impact":
+            item["impact"],
+
+
+            "time":
+            item["time"]
+
+        })
+
+
+    return result
+
+
 
 if __name__ == "__main__":
 
+
     news = get_news()
+
+
 
     print(
         f"تعداد خبرهای جدید: {len(news)}"
     )
 
+
+
     for n in news:
 
-        print("\n🆕 خبر")
 
-        print(
-            "📂",
-            n["category"]
-        )
+        print("\n" + "=" * 60)
+
 
         print(
             "📰 منبع:",
             n["source"]
         )
 
+
+        print(
+            "📂 دسته:",
+            n["category"]
+        )
+
+
         print(
             "🚨 فوری:",
             "بله" if n["urgent"] else "خیر"
         )
+
 
         print(
             "⚠️ مهم:",
             "بله" if n["impact"] else "خیر"
         )
 
+
         print(
-            "📝 عنوان:"
+            "\n📝 عنوان:"
         )
+
 
         print(
             n["title"]
         )
 
+
         if n["description"]:
+
 
             print(
                 "\n📄 توضیحات:"
             )
 
+
             print(
                 n["description"]
             )
+
+
 
         print(
             "\n🔗 لینک:"
         )
 
+
         print(
             n["link"]
         )
 
-        print("-" * 60)
+
+        print(
+            "\n⏰ زمان:"
+        )
+
+
+        print(
+            n["time"]
+        )
+        def get_best_news(limit=10):
+
+    news = get_news(
+        limit=limit
+    )
+
+
+    important = []
+
+
+    for item in news:
+
+
+        if (
+            item["urgent"]
+            or
+            item["impact"]
+        ):
+
+            important.append(item)
+
+
+
+    if important:
+
+        return important[:limit]
+
+
+    return news[:limit]
+
+
+
+def export_json(filename="latest_news.json"):
+
+    news = get_best_news()
+
+
+    try:
+
+        with open(
+            filename,
+            "w",
+            encoding="utf-8"
+        ) as f:
+
+
+            json.dump(
+
+                news,
+
+                f,
+
+                ensure_ascii=False,
+
+                indent=4
+
+            )
+
+
+        return True
+
+
+    except Exception:
+
+
+        return False
+
+
+
+def telegram_text(item):
+
+    text = f"""
+📰 {item['source']}
+
+📂 دسته:
+{item['category']}
+
+{"🚨 خبر فوری" if item['urgent'] else "📝 خبر بازار"}
+
+{item['title']}
+
+"""
+
+
+    if item["description"]:
+
+        text += (
+            "\n📄 "
+            +
+            item["description"]
+        )
+
+
+    text += (
+
+        "\n\n🔗 "
+        +
+        item["link"]
+
+    )
+
+
+    return text.strip()
+
+
+
+def get_telegram_news(limit=5):
+
+    news = get_best_news(
+        limit
+    )
+
+
+    messages = []
+
+
+    for item in news:
+
+        messages.append(
+            telegram_text(item)
+        )
+
+
+    return messages
