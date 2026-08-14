@@ -37,6 +37,7 @@ PROTECTED_TERMS = {
     "BNB": "BNB",
     "XRP": "XRP",
     "USDT": "USDT",
+    "IBIT": "IBIT",
 
     "ETF": "ETF",
     "NFT": "NFT",
@@ -61,6 +62,46 @@ PROTECTED_TERMS = {
 
     "Exchanges": "صرافی‌ها",
     "Exchange": "صرافی",
+
+    # ========================================================
+    # ETF / Options / Financial instruments
+    # ========================================================
+
+    "call options": "اختیارهای خرید",
+    "Call options": "اختیارهای خرید",
+    "calls": "اختیارهای خرید",
+    "Calls": "اختیارهای خرید",
+
+    "put options": "اختیارهای فروش",
+    "Put options": "اختیارهای فروش",
+    "puts": "اختیارهای فروش",
+    "Puts": "اختیارهای فروش",
+
+    "underlying shares": "سهام پایه",
+    "Underlying shares": "سهام پایه",
+
+    "underlying assets": "دارایی‌های پایه",
+    "Underlying assets": "دارایی‌های پایه",
+
+    "underlying stock": "سهام پایه",
+    "underlying securities": "اوراق بهادار پایه",
+
+    "options contracts": "قراردادهای اختیار معامله",
+    "option contracts": "قراردادهای اختیار معامله",
+    "options contract": "قرارداد اختیار معامله",
+    "option contract": "قرارداد اختیار معامله",
+
+    "call contracts": "قراردادهای اختیار خرید",
+    "put contracts": "قراردادهای اختیار فروش",
+
+    "filing": "گزارش ثبت‌شده",
+    "filings": "گزارش‌های ثبت‌شده",
+
+    "quarterly filing": "گزارش فصلی ثبت‌شده",
+    "SEC filing": "گزارش ثبت‌شده نزد SEC",
+
+    "assets under management": "دارایی‌های تحت مدیریت",
+    "AUM": "دارایی‌های تحت مدیریت",
 
     # ========================================================
     # Finance
@@ -108,8 +149,6 @@ PROTECTED_TERMS = {
     "net income": "درآمد خالص",
     "annual threshold": "آستانه سالانه",
 
-    "underlying assets": "دارایی‌های پایه",
-
     "institutional investors":
         "سرمایه‌گذاران نهادی",
 
@@ -129,6 +168,14 @@ PROTECTED_TERMS = {
 
     "Trust": "تراست",
 
+    "portfolio": "سبد سرمایه‌گذاری",
+    "holdings": "دارایی‌ها",
+    "holding": "دارایی",
+
+    "trading volume": "حجم معاملات",
+    "market maker": "بازارساز",
+    "market makers": "بازارسازان",
+
     # ========================================================
     # Companies
     # ========================================================
@@ -136,6 +183,7 @@ PROTECTED_TERMS = {
     "Hashdex": "Hashdex",
     "Metaplanet": "متاپلنِت",
     "Trezor": "ترزور",
+    "BlackRock": "بلک‌راک",
 
     # ========================================================
     # Security / Regulation
@@ -160,10 +208,6 @@ PROTECTED_TERMS = {
 
 REPLACE_WORDS = {
 
-    # --------------------------------------------------------
-    # Crypto / regulation
-    # --------------------------------------------------------
-
     "Reg کریپتو": "مقررات کریپتو",
     "Reg crypto": "مقررات کریپتو",
     "crypto Reg": "مقررات کریپتو",
@@ -171,13 +215,8 @@ REPLACE_WORDS = {
 
     "ارزهای رمزنگاری شده": "ارزهای دیجیتال",
     "ارز رمزنگاری شده": "ارز دیجیتال",
-
     "ارزهای رمزنگاری‌شده": "ارزهای دیجیتال",
     "ارز رمزنگاری‌شده": "ارز دیجیتال",
-
-    # --------------------------------------------------------
-    # Common bad translations
-    # --------------------------------------------------------
 
     "رمزنگاری": "کریپتو",
 
@@ -187,6 +226,26 @@ REPLACE_WORDS = {
 
     "اوراق قرضههای": "اوراق قرضه",
     "اوراق قرضه های": "اوراق قرضه",
+
+    # --------------------------------------------------------
+    # Financial corrections
+    # --------------------------------------------------------
+
+    "تماس ها": "اختیارهای خرید",
+    "تماس‌ها": "اختیارهای خرید",
+
+    "قرار می دهد": "می‌رساند",
+
+    "سهام های پایه": "سهام پایه",
+    "سهام پایه ای": "سهام پایه",
+
+    "گزینه های تماس": "اختیارهای خرید",
+    "گزینه‌های تماس": "اختیارهای خرید",
+
+    "گزینه های قرار دادن": "اختیارهای فروش",
+    "گزینه‌های قرار دادن": "اختیارهای فروش",
+
+    "پرونده": "گزارش ثبت‌شده",
 
     # --------------------------------------------------------
     # نیم‌فاصله
@@ -232,7 +291,7 @@ REPLACE_WORDS = {
     "می‌ کنند": "می‌کنند",
 
     # --------------------------------------------------------
-    # ترجمه‌های شناخته‌شده و خراب
+    # Bad translations
     # --------------------------------------------------------
 
     "سوار شد": "افزایش یافت",
@@ -243,7 +302,7 @@ REPLACE_WORDS = {
     "در به عنوان": "در آستانه",
 
     # --------------------------------------------------------
-    # نویز
+    # Noise
     # --------------------------------------------------------
 
     "Edge": "",
@@ -291,11 +350,7 @@ PERSIAN_MONTHS = [
 # Gregorian -> Jalali
 # ============================================================
 
-def gregorian_to_jalali(
-    year,
-    month,
-    day
-):
+def gregorian_to_jalali(year, month, day):
 
     gy = year - 1600
     gm = month - 1
@@ -330,42 +385,24 @@ def gregorian_to_jalali(
 
     days += gd
 
-    jy = -1595 + 33 * (
-        days // 12053
-    )
+    jy = -1595 + 33 * (days // 12053)
 
     days %= 12053
 
-    jy += 4 * (
-        days // 1461
-    )
+    jy += 4 * (days // 1461)
 
     days %= 1461
 
     if days > 365:
-
-        jy += (
-            days - 1
-        ) // 365
-
-        days = (
-            days - 1
-        ) % 365
+        jy += (days - 1) // 365
+        days = (days - 1) % 365
 
     if days < 186:
-
         jm = 1 + days // 31
         jd = 1 + days % 31
-
     else:
-
-        jm = 7 + (
-            days - 186
-        ) // 30
-
-        jd = 1 + (
-            days - 186
-        ) % 30
+        jm = 7 + (days - 186) // 30
+        jd = 1 + (days - 186) % 30
 
     return jy, jm, jd
 
@@ -374,22 +411,11 @@ def gregorian_to_jalali(
 # Convert date
 # ============================================================
 
-def convert_date(
-    year,
-    month,
-    day
-):
+def convert_date(year, month, day):
 
     try:
-
-        datetime(
-            year,
-            month,
-            day
-        )
-
+        datetime(year, month, day)
     except ValueError:
-
         return None
 
     jy, jm, jd = gregorian_to_jalali(
@@ -398,32 +424,19 @@ def convert_date(
         day
     )
 
-    return (
-        f"{jd} "
-        f"{PERSIAN_MONTHS[jm - 1]} "
-        f"{jy}"
-    )
+    return f"{jd} {PERSIAN_MONTHS[jm - 1]} {jy}"
 
 
 # ============================================================
 # Convert English dates
 # ============================================================
 
-def convert_dates_to_jalali(
-    text
-):
+def convert_dates_to_jalali(text):
 
     if not text:
         return ""
 
-    month_pattern = "|".join(
-        MONTHS.keys()
-    )
-
-    # --------------------------------------------------------
-    # August 12, 2026
-    # August 12 2026
-    # --------------------------------------------------------
+    month_pattern = "|".join(MONTHS.keys())
 
     pattern_1 = re.compile(
         r"\b("
@@ -437,22 +450,11 @@ def convert_dates_to_jalali(
 
     def replace_1(match):
 
-        month_name = (
-            match.group(1)
-            .lower()
-        )
+        month_name = match.group(1).lower()
+        day = int(match.group(2))
+        year = int(match.group(3))
 
-        day = int(
-            match.group(2)
-        )
-
-        year = int(
-            match.group(3)
-        )
-
-        month = MONTHS.get(
-            month_name
-        )
+        month = MONTHS.get(month_name)
 
         result = convert_date(
             year,
@@ -460,19 +462,12 @@ def convert_dates_to_jalali(
             day
         )
 
-        if result:
-            return result
-
-        return match.group(0)
+        return result or match.group(0)
 
     text = pattern_1.sub(
         replace_1,
         text
     )
-
-    # --------------------------------------------------------
-    # 12 August 2026
-    # --------------------------------------------------------
 
     pattern_2 = re.compile(
         r"\b"
@@ -485,22 +480,11 @@ def convert_dates_to_jalali(
 
     def replace_2(match):
 
-        day = int(
-            match.group(1)
-        )
+        day = int(match.group(1))
+        month_name = match.group(2).lower()
+        year = int(match.group(3))
 
-        month_name = (
-            match.group(2)
-            .lower()
-        )
-
-        year = int(
-            match.group(3)
-        )
-
-        month = MONTHS.get(
-            month_name
-        )
+        month = MONTHS.get(month_name)
 
         result = convert_date(
             year,
@@ -508,10 +492,7 @@ def convert_dates_to_jalali(
             day
         )
 
-        if result:
-            return result
-
-        return match.group(0)
+        return result or match.group(0)
 
     text = pattern_2.sub(
         replace_2,
@@ -525,12 +506,9 @@ def convert_dates_to_jalali(
 # Protect technical terms
 # ============================================================
 
-def protect_terms(
-    text
-):
+def protect_terms(text):
 
     protected = {}
-
     counter = 0
 
     terms = sorted(
@@ -551,18 +529,14 @@ def protect_terms(
         if not pattern.search(text):
             continue
 
-        marker = (
-            f"XQTERM{counter}QX"
-        )
+        marker = f"XQTERM{counter}QX"
 
         text = pattern.sub(
             marker,
             text
         )
 
-        protected[
-            marker
-        ] = value
+        protected[marker] = value
 
         counter += 1
 
@@ -573,10 +547,7 @@ def protect_terms(
 # Restore protected terms
 # ============================================================
 
-def restore_terms(
-    text,
-    protected
-):
+def restore_terms(text, protected):
 
     if not text:
         return text
@@ -595,46 +566,37 @@ def restore_terms(
 # Clean text
 # ============================================================
 
-def clean_text(
-    text
-):
+def clean_text(text):
 
     if not text:
         return ""
 
-    text = html.unescape(
-        str(text)
-    )
+    text = html.unescape(str(text))
 
-    # حذف HTML
     text = re.sub(
         r"<[^>]+>",
         " ",
         text
     )
 
-    # حذف entity
     text = re.sub(
         r"&[a-zA-Z0-9#]+;",
         " ",
         text
     )
 
-    # فاصله‌های خطی
     text = re.sub(
         r"[\r\n\t]+",
         " ",
         text
     )
 
-    # فاصله اضافی
     text = re.sub(
         r"\s+",
         " ",
         text
     )
 
-    # اصلاح عبارت‌ها
     for wrong, correct in REPLACE_WORDS.items():
 
         text = text.replace(
@@ -642,7 +604,6 @@ def clean_text(
             correct
         )
 
-    # حذف تکرار کلمات پشت سر هم
     words = text.split()
 
     result = []
@@ -655,54 +616,24 @@ def clean_text(
         ):
             result.append(word)
 
-    text = " ".join(
-        result
-    )
+    text = " ".join(result)
 
-    # --------------------------------------------------------
-    # علائم نگارشی
-    # --------------------------------------------------------
+    # ========================================================
+    # Persian punctuation
+    # ========================================================
 
+    text = re.sub(r"\s+،", "،", text)
+    text = re.sub(r"\s+؛", "؛", text)
+    text = re.sub(r"\s+؟", "؟", text)
+    text = re.sub(r"\s+!", "!", text)
+    text = re.sub(r"\s+\.", ".", text)
+    text = re.sub(r"\s+%", "%", text)
+    text = re.sub(r"\s+,", ",", text)
+
+    # فاصله بعد از علائم
     text = re.sub(
-        r"\s+،",
-        "،",
-        text
-    )
-
-    text = re.sub(
-        r"\s+\.",
-        ".",
-        text
-    )
-
-    text = re.sub(
-        r"\s+؛",
-        "؛",
-        text
-    )
-
-    text = re.sub(
-        r"\s+؟",
-        "؟",
-        text
-    )
-
-    text = re.sub(
-        r"\s+!",
-        "!",
-        text
-    )
-
-    text = re.sub(
-        r"\s+%",
-        "%",
-        text
-    )
-
-    # فاصله قبل از ویرگول انگلیسی
-    text = re.sub(
-        r"\s+,",
-        ",",
+        r"([،؛؟!])([^\s])",
+        r"\1 \2",
         text
     )
 
@@ -713,9 +644,7 @@ def clean_text(
 # Remove duplicate sentences
 # ============================================================
 
-def remove_duplicate_sentences(
-    text
-):
+def remove_duplicate_sentences(text):
 
     if not text:
         return ""
@@ -741,34 +670,193 @@ def remove_duplicate_sentences(
             sentence.lower()
         )
 
-        if (
-            normalized
-            and normalized in seen
-        ):
+        if normalized and normalized in seen:
             continue
 
         if normalized:
-            seen.add(
-                normalized
-            )
+            seen.add(normalized)
 
-        result.append(
-            sentence
+        result.append(sentence)
+
+    return " ".join(result)
+
+
+# ============================================================
+# Financial translation corrections
+# ============================================================
+
+def normalize_financial_terms(text):
+
+    if not text:
+        return ""
+
+    replacements = {
+
+        # Options
+        "اختیار خریدها": "اختیارهای خرید",
+        "اختیار فروشها": "اختیارهای فروش",
+
+        "اختیار خرید": "اختیار خرید",
+        "اختیار فروش": "اختیار فروش",
+
+        # Shares
+        "سهام زیرین": "سهام پایه",
+        "سهام زیربنایی": "سهام پایه",
+        "سهم های پایه": "سهام پایه",
+
+        # Filing
+        "بایگانی": "گزارش ثبت‌شده",
+        "پرونده": "گزارش ثبت‌شده",
+
+        # ETF
+        "ETF بیت کوین": "ETF بیت‌کوین",
+        "ETF اتریوم": "ETF اتریوم",
+
+        # Common machine translations
+        "افزایش 24 برابری را به همراه": "با افزایش ۲۴ برابری",
+        "افزایش 24 برابری": "افزایش ۲۴ برابری",
+        "کاهش 52.75 درصدی": "کاهش ۵۲٫۷۵ درصدی",
+
+        "به 1.95 میلیون": "به ۱٫۹۵ میلیون",
+
+        "در سهام": "در سهام پایه",
+
+        "آن 1.95 میلیون": "این ۱٫۹۵ میلیون",
+
+        "تماس معادل سهم": "سهام معادل قراردادهای اختیار خرید",
+
+        "تماس معادل سهام": "سهام معادل قراردادهای اختیار خرید",
+
+        "هدف حساب حل نشده باقی ماند":
+            "هدف دقیق این معاملات همچنان مشخص نیست",
+
+        "هدف حساب": "هدف دقیق معاملات",
+
+        "حل نشده باقی ماند":
+            "همچنان مشخص نیست",
+    }
+
+    for wrong, correct in replacements.items():
+
+        text = text.replace(
+            wrong,
+            correct
         )
 
-    return " ".join(
-        result
+    return text
+
+
+# ============================================================
+# Convert Western digits to Persian digits
+# ============================================================
+
+def persian_digits(text):
+
+    if not text:
+        return ""
+
+    table = str.maketrans(
+        "0123456789",
+        "۰۱۲۳۴۵۶۷۸۹"
     )
+
+    return text.translate(table)
+
+
+# ============================================================
+# RTL / LTR formatting
+# ============================================================
+
+def apply_rtl(text):
+
+    if not text:
+        return ""
+
+    RLM = "\u200f"
+    LRM = "\u200e"
+
+    text = text.strip()
+
+    # --------------------------------------------------------
+    # Protect English words / symbols from RTL corruption
+    # --------------------------------------------------------
+
+    def protect_ltr(match):
+
+        value = match.group(0)
+
+        return (
+            LRM
+            + value
+            + LRM
+        )
+
+    # فقط بخش‌های لاتین و نمادهای مالی
+    text = re.sub(
+        r"(?<![\u0600-\u06FF])"
+        r"[A-Za-z][A-Za-z0-9._/-]*"
+        r"(?![\u0600-\u06FF])",
+        protect_ltr,
+        text
+    )
+
+    # --------------------------------------------------------
+    # درصدها و اعداد
+    # --------------------------------------------------------
+
+    def protect_numbers(match):
+
+        value = match.group(0)
+
+        return (
+            LRM
+            + value
+            + LRM
+        )
+
+    text = re.sub(
+        r"\d+(?:[.,٫]\d+)?%?",
+        protect_numbers,
+        text
+    )
+
+    # --------------------------------------------------------
+    # هر جمله را RTL کن
+    # --------------------------------------------------------
+
+    parts = re.split(
+        r"(?<=[.!؟])\s+",
+        text
+    )
+
+    rtl_parts = []
+
+    for part in parts:
+
+        part = part.strip()
+
+        if not part:
+            continue
+
+        # RLM در ابتدا و انتهای هر جمله
+        part = (
+            RLM
+            + part
+            + RLM
+        )
+
+        rtl_parts.append(part)
+
+    text = "\n".join(rtl_parts)
+
+    return text.strip()
 
 
 # ============================================================
 # Translation quality
 # ============================================================
 
-def good_translation(
-    text,
-    original=""
-):
+def good_translation(text, original=""):
 
     if not text:
         return False
@@ -777,10 +865,6 @@ def good_translation(
 
     if not text:
         return False
-
-    # --------------------------------------------------------
-    # Placeholder نباید باقی مانده باشد
-    # --------------------------------------------------------
 
     bad_phrases = [
 
@@ -817,16 +901,8 @@ def good_translation(
         if phrase.lower() in lowered:
             return False
 
-    # --------------------------------------------------------
-    # متن خیلی کوتاه
-    # --------------------------------------------------------
-
     if len(text.split()) < 3:
         return False
-
-    # --------------------------------------------------------
-    # تشخیص فارسی بودن
-    # --------------------------------------------------------
 
     persian_chars = len(
         re.findall(
@@ -842,21 +918,13 @@ def good_translation(
         )
     )
 
-    # اگر متن طولانی است باید مقدار مناسبی فارسی داشته باشد
     if len(text) >= 50:
 
         if persian_chars == 0:
             return False
 
-        if (
-            english_chars
-            > persian_chars * 2
-        ):
+        if english_chars > persian_chars * 2:
             return False
-
-    # --------------------------------------------------------
-    # خروجی نباید عین متن انگلیسی باشد
-    # --------------------------------------------------------
 
     if original:
 
@@ -882,35 +950,26 @@ def good_translation(
 # Shorten
 # ============================================================
 
-def shorten(
-    text,
-    limit=1200
-):
+def shorten(text, limit=1200):
 
     if not text:
         return ""
 
-    text = clean_text(
-        text
-    )
+    text = clean_text(text)
 
     if len(text) <= limit:
         return text
 
     shortened = text[:limit]
 
-    # اول قطع روی پایان جمله
     sentence_positions = [
-
         shortened.rfind("۔"),
         shortened.rfind("."),
         shortened.rfind("؟"),
         shortened.rfind("!"),
     ]
 
-    sentence_end = max(
-        sentence_positions
-    )
+    sentence_end = max(sentence_positions)
 
     if sentence_end >= limit * 0.70:
 
@@ -918,21 +977,13 @@ def shorten(
             :sentence_end + 1
         ].strip()
 
-    # در غیر این صورت روی فاصله
-    last_space = shortened.rfind(
-        " "
-    )
+    last_space = shortened.rfind(" ")
 
     if last_space > limit * 0.75:
-
-        shortened = shortened[
-            :last_space
-        ]
+        shortened = shortened[:last_space]
 
     return (
-        shortened.rstrip(
-            " .،؛,:-–—"
-        )
+        shortened.rstrip(" .،؛,:-–—")
         + "..."
     )
 
@@ -941,12 +992,9 @@ def shorten(
 # Protect dates
 # ============================================================
 
-def protect_dates(
-    text
-):
+def protect_dates(text):
 
     protected = {}
-
     counter = 0
 
     month_pattern = "|".join(
@@ -955,7 +1003,6 @@ def protect_dates(
 
     patterns = [
 
-        # August 12, 2026
         re.compile(
             r"\b("
             + month_pattern
@@ -966,7 +1013,6 @@ def protect_dates(
             re.IGNORECASE
         ),
 
-        # 12 August 2026
         re.compile(
             r"\b"
             r"(\d{1,2})\s+("
@@ -985,44 +1031,26 @@ def protect_dates(
 
             nonlocal counter
 
-            marker = (
-                f"XQDATE{counter}QX"
-            )
+            marker = f"XQDATE{counter}QX"
 
-            # حالت:
-            # August 12, 2026
-            if (
-                match.group(1).lower()
-                in MONTHS
-            ):
+            if match.group(1).lower() in MONTHS:
 
                 month = MONTHS[
                     match.group(1).lower()
                 ]
 
-                day = int(
-                    match.group(2)
-                )
+                day = int(match.group(2))
+                year = int(match.group(3))
 
-                year = int(
-                    match.group(3)
-                )
-
-            # حالت:
-            # 12 August 2026
             else:
 
-                day = int(
-                    match.group(1)
-                )
+                day = int(match.group(1))
 
                 month = MONTHS[
                     match.group(2).lower()
                 ]
 
-                year = int(
-                    match.group(3)
-                )
+                year = int(match.group(3))
 
             converted = convert_date(
                 year,
@@ -1033,9 +1061,7 @@ def protect_dates(
             if not converted:
                 return match.group(0)
 
-            protected[
-                marker
-            ] = converted
+            protected[marker] = converted
 
             counter += 1
 
@@ -1053,10 +1079,7 @@ def protect_dates(
 # Restore dates
 # ============================================================
 
-def restore_dates(
-    text,
-    protected
-):
+def restore_dates(text, protected):
 
     for marker, value in protected.items():
 
@@ -1072,20 +1095,12 @@ def restore_dates(
 # Main translator
 # ============================================================
 
-def translate_text(
-    text
-):
+def translate_text(text):
 
     if not text:
         return ""
 
-    # --------------------------------------------------------
-    # Original
-    # --------------------------------------------------------
-
-    original = clean_text(
-        text
-    )
+    original = clean_text(text)
 
     if not original:
         return ""
@@ -1101,7 +1116,7 @@ def translate_text(
         )
 
         # ----------------------------------------------------
-        # Protect technical terms
+        # Protect technical / financial terms
         # ----------------------------------------------------
 
         protected_text, protected_terms = protect_terms(
@@ -1125,7 +1140,7 @@ def translate_text(
             return ""
 
         # ----------------------------------------------------
-        # Restore technical terms
+        # Restore terms
         # ----------------------------------------------------
 
         translated = restore_terms(
@@ -1134,7 +1149,7 @@ def translate_text(
         )
 
         # ----------------------------------------------------
-        # Restore Jalali dates
+        # Restore dates
         # ----------------------------------------------------
 
         translated = restore_dates(
@@ -1151,127 +1166,8 @@ def translate_text(
         )
 
         # ----------------------------------------------------
-        # Remove duplicate sentences
+        # Financial corrections
         # ----------------------------------------------------
 
-        translated = remove_duplicate_sentences(
-            translated
-        )
-
-        # ----------------------------------------------------
-        # Convert any dates Google may have altered
-        # ----------------------------------------------------
-
-        translated = convert_dates_to_jalali(
-            translated
-        )
-
-        # ----------------------------------------------------
-        # Final cleanup
-        # ----------------------------------------------------
-
-        translated = clean_text(
-            translated
-        )
-
-        # ----------------------------------------------------
-        # Quality check
-        # ----------------------------------------------------
-
-        if not good_translation(
-            translated,
-            original
-        ):
-
-            print(
-                "⚠️ ترجمه از نظر کیفیت قابل قبول نبود"
-            )
-
-            return ""
-
-        # ----------------------------------------------------
-        # Limit length
-        # ----------------------------------------------------
-
-        translated = shorten(
-            translated,
-            1200
-        )
-
-        return translated
-
-    except Exception as e:
-
-        print(
-            "❌ خطا در ترجمه:",
-            e
-        )
-
-        return ""
-
-
-# ============================================================
-# Test
-# ============================================================
-
-if __name__ == "__main__":
-
-    tests = [
-
-        """
-        The Federal Reserve is expected to keep
-        interest rates unchanged on August 12, 2026.
-        Investors are watching the decision closely.
-        """,
-
-        """
-        Metaplanet moved more than 5,000 Bitcoin
-        on August 12, 2026, raising speculation
-        that the company could sell part of its holdings.
-        """,
-
-        """
-        The SEC postponed the long-awaited
-        crypto regulation meeting.
-        """,
-
-        """
-        Bitcoin surged after investors reacted
-        to the latest Federal Reserve decision.
-        """,
-
-        """
-        The company announced a major Bitcoin purchase
-        and said it plans to continue expanding
-        its holdings.
-        """,
-    ]
-
-    for test in tests:
-
-        print(
-            "\n"
-            + "=" * 60
-        )
-
-        print(
-            "ORIGINAL:"
-        )
-
-        print(
-            clean_text(test)
-        )
-
-        print(
-            "\nTRANSLATED:"
-        )
-
-        result = translate_text(
-            test
-        )
-
-        print(
-            result
-            if result
-            else "❌ ترجمه قابل قبول نبود"
-        )
+        translated = normalize_financial_terms(
+           
