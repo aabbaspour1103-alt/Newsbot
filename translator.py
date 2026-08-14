@@ -10,88 +10,89 @@ from datetime import datetime
 
 PROTECTED_TERMS = {
 
-    # ---------------- Crypto ----------------
+    # --------------------------------------------------------
+    # Crypto
+    # --------------------------------------------------------
+
+    "Bitcoin Core": "Bitcoin Core",
+    "Bitcoin ETF": "ETF بیت‌کوین",
+    "Ethereum ETF": "ETF اتریوم",
 
     "Bitcoin": "بیت‌کوین",
-    "Bitcoin Core": "Bitcoin Core",
     "Ethereum": "اتریوم",
-    "Binance": "بایننس",
     "Binance Coin": "بایننس کوین",
-    "BNB": "BNB",
+    "Binance": "بایننس",
     "Solana": "سولانا",
     "Ripple": "ریپل",
-    "XRP": "XRP",
     "Dogecoin": "دوج‌کوین",
     "Shiba Inu": "شیبا اینو",
     "Cardano": "کاردانو",
     "Polygon": "پالیگان",
     "Toncoin": "تون‌کوین",
     "Tether": "تتر",
+
+    "BNB": "BNB",
+    "XRP": "XRP",
     "USDT": "USDT",
+    "ETF": "ETF",
+    "NFT": "NFT",
+    "DAO": "DAO",
+    "DeFi": "دیفای",
+    "Web3": "وب۳",
 
-    # ---------------- Crypto terms ----------------
-
-    "Cryptocurrency": "ارز دیجیتال",
     "Cryptocurrencies": "ارزهای دیجیتال",
+    "Cryptocurrency": "ارز دیجیتال",
     "Crypto": "کریپتو",
     "crypto": "کریپتو",
 
     "Blockchain": "بلاکچین",
     "blockchain": "بلاکچین",
 
-    "DeFi": "دیفای",
-    "NFT": "NFT",
-    "DAO": "DAO",
-    "Web3": "وب۳",
+    "Stablecoins": "استیبل‌کوین‌ها",
+    "Stablecoin": "استیبل‌کوین",
+
+    "Tokens": "توکن‌ها",
+    "Token": "توکن",
 
     "Exchange": "صرافی",
-    "Token": "توکن",
-    "Tokens": "توکن‌ها",
+    "Exchanges": "صرافی‌ها",
 
-    "Stablecoin": "استیبل‌کوین",
-    "Stablecoins": "استیبل‌کوین‌ها",
-
-    "Bitcoin ETF": "ETF بیت‌کوین",
-    "Ethereum ETF": "ETF اتریوم",
-    "ETF": "ETF",
-
-    # ---------------- Finance ----------------
+    # --------------------------------------------------------
+    # Finance
+    # --------------------------------------------------------
 
     "Federal Reserve": "فدرال رزرو آمریکا",
     "Fed": "فدرال رزرو آمریکا",
     "Jerome Powell": "جروم پاول",
 
+    "Securities and Exchange Commission": (
+        "کمیسیون بورس و اوراق بهادار آمریکا (SEC)"
+    ),
+
     "SEC": "کمیسیون بورس و اوراق بهادار آمریکا (SEC)",
     "CFTC": "کمیسیون معاملات آتی کالای آمریکا (CFTC)",
 
-    "interest rate": "نرخ بهره",
     "interest rates": "نرخ‌های بهره",
+    "interest rate": "نرخ بهره",
 
-    "rate hike": "افزایش نرخ بهره",
     "rate hikes": "افزایش نرخ بهره",
+    "rate hike": "افزایش نرخ بهره",
 
-    "rate cut": "کاهش نرخ بهره",
     "rate cuts": "کاهش نرخ بهره",
+    "rate cut": "کاهش نرخ بهره",
 
     "inflation": "تورم",
     "recession": "رکود اقتصادی",
 
+    "bond markets": "بازارهای اوراق قرضه",
     "bond market": "بازار اوراق قرضه",
-    "bond markets": "بازار اوراق قرضه",
 
     "bond traders": "معامله‌گران اوراق قرضه",
     "bond yields": "بازده اوراق قرضه",
     "yield": "بازده",
 
-    "stock market": "بازار سهام",
     "stock markets": "بازارهای سهام",
-
-    "shares": "سهام",
-    "share": "سهم",
-
-    "investors": "سرمایه‌گذاران",
-    "investment": "سرمایه‌گذاری",
-    "investments": "سرمایه‌گذاری‌ها",
+    "stock market": "بازار سهام",
 
     "market capitalization": "ارزش بازار",
 
@@ -100,24 +101,40 @@ PROTECTED_TERMS = {
 
     "underlying assets": "دارایی‌های پایه",
 
+    "institutional investors": "سرمایه‌گذاران نهادی",
+    "investors": "سرمایه‌گذاران",
+
+    "investments": "سرمایه‌گذاری‌ها",
+    "investment": "سرمایه‌گذاری",
+
+    "shares": "سهام",
+    "share": "سهم",
+
     "issuer": "ناشر",
+    "issuers": "ناشران",
+
     "provider": "ارائه‌دهنده",
+    "providers": "ارائه‌دهندگان",
 
     "Trust": "تراست",
 
-    # ---------------- Companies / Organizations ----------------
+    # --------------------------------------------------------
+    # Companies
+    # --------------------------------------------------------
 
     "Hashdex": "Hashdex",
     "Metaplanet": "متاپلنِت",
     "Trezor": "ترزور",
 
-    # ---------------- Important terms ----------------
+    # --------------------------------------------------------
+    # Security / Regulation
+    # --------------------------------------------------------
 
-    "data breach": "نقض داده",
     "data breach": "نقض امنیت داده",
+    "security breach": "نقض امنیتی",
 
-    "hack": "هک",
     "hacked": "هک شد",
+    "hack": "هک",
 
     "sanctions": "تحریم‌ها",
     "sanction": "تحریم",
@@ -128,68 +145,83 @@ PROTECTED_TERMS = {
 
 
 # ============================================================
-# Common bad translations / corrections
+# Common translation corrections
 # ============================================================
 
 REPLACE_WORDS = {
 
     "Reg کریپتو": "مقررات کریپتو",
     "Reg crypto": "مقررات کریپتو",
-
     "crypto Reg": "مقررات کریپتو",
     "Crypto Reg": "مقررات کریپتو",
 
     "ارزهای رمزنگاری شده": "ارزهای دیجیتال",
     "ارز رمزنگاری شده": "ارز دیجیتال",
 
+    "ارز رمزنگاری‌شده": "ارز دیجیتال",
+    "ارزهای رمزنگاری‌شده": "ارزهای دیجیتال",
+
     "رمزنگاری": "کریپتو",
 
     "بهره بهره": "بهره",
-
     "بازده بازده": "بازده",
-
     "سهام سهام": "سهام",
 
     "اوراق قرضههای": "اوراق قرضه",
     "اوراق قرضه های": "اوراق قرضه",
 
     "ارائه دهنده": "ارائه‌دهنده",
-    "ارائه‌دهندگان": "ارائه‌دهندگان",
+    "ارائه دهندگان": "ارائه‌دهندگان",
 
     "سرمایه گذاران": "سرمایه‌گذاران",
+    "سرمایه گذار": "سرمایه‌گذار",
+
     "سرمایه گذاری": "سرمایه‌گذاری",
     "سرمایه گذاری‌ها": "سرمایه‌گذاری‌ها",
+
+    "سرمایه‌ گذاری": "سرمایه‌گذاری",
 
     "می کند": "می‌کند",
     "می شود": "می‌شود",
     "می کنند": "می‌کنند",
-    "خواهد شد": "خواهد شد",
+    "می کند.": "می‌کند.",
+    "می شود.": "می‌شود.",
 
-    "سوار شد": "افزایش یافت",
+    "می‌ کند": "می‌کند",
+    "می‌ شود": "می‌شود",
+    "می‌ کنند": "می‌کنند",
 
     "هزینه های": "هزینه‌های",
-
     "داده های": "داده‌های",
-
     "نرخ های": "نرخ‌های",
-
     "قیمت های": "قیمت‌های",
-
     "بازار های": "بازارهای",
-
     "شرکت های": "شرکت‌های",
-
     "دارایی های": "دارایی‌های",
+
+    "هزینه‌ های": "هزینه‌های",
+    "داده‌ های": "داده‌های",
+    "نرخ‌ های": "نرخ‌های",
+    "قیمت‌ های": "قیمت‌های",
+    "بازار‌ های": "بازارهای",
+    "شرکت‌ های": "شرکت‌های",
+    "دارایی‌ های": "دارایی‌های",
 
     "در به عنوان": "در آستانه",
 
+    # ترجمه‌های رایج و اشتباه Google
+    "سوار شد": "افزایش یافت",
+    "سوار شده": "افزایش یافته",
+    "اول است": "در ابتدا است",
+
     "Edge": "",
+    "edge": "",
 
 }
 
 
 # ============================================================
-# English month names
+# English months
 # ============================================================
 
 MONTHS = {
@@ -239,20 +271,6 @@ def gregorian_to_jalali(year, month, day):
         31, 31, 30, 31, 30, 31
     ]
 
-    if month > 2:
-        if (
-            year % 4 == 0
-            and (
-                year % 100 != 0
-                or year % 400 == 0
-            )
-        ):
-            gy_days = 366
-        else:
-            gy_days = 365
-    else:
-        gy_days = 365
-
     days = (
         365 * gy
         + (gy + 3) // 4
@@ -286,17 +304,13 @@ def gregorian_to_jalali(year, month, day):
     days %= 1461
 
     if days > 365:
-
         jy += (days - 1) // 365
         days = (days - 1) % 365
 
     if days < 186:
-
         jm = 1 + days // 31
         jd = 1 + days % 31
-
     else:
-
         jm = 7 + (days - 186) // 30
         jd = 1 + (days - 186) % 30
 
@@ -306,7 +320,6 @@ def gregorian_to_jalali(year, month, day):
 def convert_date(year, month, day):
 
     try:
-
         datetime(
             year,
             month,
@@ -328,7 +341,7 @@ def convert_date(year, month, day):
 
 
 # ============================================================
-# Convert English dates inside text
+# Date conversion
 # ============================================================
 
 def convert_dates_to_jalali(text):
@@ -336,21 +349,39 @@ def convert_dates_to_jalali(text):
     if not text:
         return ""
 
+    month_pattern = "|".join(
+        MONTHS.keys()
+    )
+
+    # --------------------------------------------------------
     # August 12, 2026
+    # August 12 2026
+    # --------------------------------------------------------
+
     pattern_1 = re.compile(
         r"\b("
-        + "|".join(MONTHS.keys())
+        + month_pattern
         + r")\s+"
-        r"(\d{1,2}),?\s+"
+        r"(\d{1,2})"
+        r"(?:,\s*|\s+)"
         r"(\d{4})\b",
         re.IGNORECASE
     )
 
     def replace_1(match):
 
-        month_name = match.group(1).lower()
-        day = int(match.group(2))
-        year = int(match.group(3))
+        month_name = (
+            match.group(1)
+            .lower()
+        )
+
+        day = int(
+            match.group(2)
+        )
+
+        year = int(
+            match.group(3)
+        )
 
         month = MONTHS.get(
             month_name
@@ -362,18 +393,25 @@ def convert_dates_to_jalali(text):
             day
         )
 
-        return result or match.group(0)
+        return (
+            result
+            if result
+            else match.group(0)
+        )
 
     text = pattern_1.sub(
         replace_1,
         text
     )
 
+    # --------------------------------------------------------
     # 12 August 2026
+    # --------------------------------------------------------
+
     pattern_2 = re.compile(
         r"\b"
         r"(\d{1,2})\s+("
-        + "|".join(MONTHS.keys())
+        + month_pattern
         + r")\s+"
         r"(\d{4})\b",
         re.IGNORECASE
@@ -381,9 +419,18 @@ def convert_dates_to_jalali(text):
 
     def replace_2(match):
 
-        day = int(match.group(1))
-        month_name = match.group(2).lower()
-        year = int(match.group(3))
+        day = int(
+            match.group(1)
+        )
+
+        month_name = (
+            match.group(2)
+            .lower()
+        )
+
+        year = int(
+            match.group(3)
+        )
 
         month = MONTHS.get(
             month_name
@@ -395,7 +442,11 @@ def convert_dates_to_jalali(text):
             day
         )
 
-        return result or match.group(0)
+        return (
+            result
+            if result
+            else match.group(0)
+        )
 
     text = pattern_2.sub(
         replace_2,
@@ -424,38 +475,50 @@ def protect_terms(text):
     for key, value in terms:
 
         pattern = re.compile(
-            r"(?<!\w)"
+            r"(?<![A-Za-z0-9_])"
             + re.escape(key)
-            + r"(?!\w)",
+            + r"(?![A-Za-z0-9_])",
             re.IGNORECASE
         )
 
-        if pattern.search(text):
+        if not pattern.search(text):
+            continue
 
-            marker = f"ZZTERM{counter}ZZ"
+        # ----------------------------------------------------
+        # از placeholder ساده مثل ZZTERM استفاده نمی‌کنیم.
+        #
+        # Google Translate ممکن است آن را تغییر دهد.
+        # ----------------------------------------------------
 
-            text = pattern.sub(
-                marker,
-                text
-            )
+        marker = (
+            f"XQTERM{counter}QX"
+        )
 
-            protected[
-                marker
-            ] = value
+        text = pattern.sub(
+            marker,
+            text
+        )
 
-            counter += 1
+        protected[
+            marker
+        ] = value
+
+        counter += 1
 
     return text, protected
 
 
 # ============================================================
-# Restore terms
+# Restore protected terms
 # ============================================================
 
 def restore_terms(
     text,
     protected
 ):
+
+    if not text:
+        return text
 
     for marker, value in protected.items():
 
@@ -468,7 +531,7 @@ def restore_terms(
 
 
 # ============================================================
-# Clean translated text
+# Clean text
 # ============================================================
 
 def clean_text(text):
@@ -487,7 +550,7 @@ def clean_text(text):
         text
     )
 
-    # حذف entity باقی‌مانده
+    # حذف entity
     text = re.sub(
         r"&[a-zA-Z0-9#]+;",
         " ",
@@ -495,6 +558,12 @@ def clean_text(text):
     )
 
     # فاصله‌ها
+    text = re.sub(
+        r"[\r\n\t]+",
+        " ",
+        text
+    )
+
     text = re.sub(
         r"\s+",
         " ",
@@ -509,22 +578,30 @@ def clean_text(text):
             correct
         )
 
-    # حذف تکرار پشت سر هم کلمات
+    # --------------------------------------------------------
+    # حذف تکرار پشت سر هم
+    # --------------------------------------------------------
+
     words = text.split()
 
-    clean = []
+    result = []
 
     for word in words:
 
         if (
-            not clean
-            or word != clean[-1]
+            not result
+            or word != result[-1]
         ):
-            clean.append(word)
+            result.append(word)
 
-    text = " ".join(clean)
+    text = " ".join(
+        result
+    )
 
-    # فاصله قبل از علائم
+    # --------------------------------------------------------
+    # علائم نگارشی
+    # --------------------------------------------------------
+
     text = re.sub(
         r"\s+،",
         "،",
@@ -555,23 +632,46 @@ def clean_text(text):
         text
     )
 
+    text = re.sub(
+        r"\s+%",
+        "%",
+        text
+    )
+
     return text.strip()
 
 
 # ============================================================
-# Translation quality check
+# Detect broken translation
 # ============================================================
 
-def good_translation(text):
+def good_translation(
+    text,
+    original=""
+):
 
     if not text:
         return False
 
-    bad_words = [
+    text = text.strip()
 
+    if not text:
+        return False
+
+    # --------------------------------------------------------
+    # عبارات ممنوع
+    # --------------------------------------------------------
+
+    bad_phrases = [
+
+        "XQTERM",
         "ZZTERM",
+
         "undefined",
         "None",
+
+        "Reg کریپتو",
+        "Reg crypto",
 
         "سوار شد",
 
@@ -581,51 +681,84 @@ def good_translation(text):
 
         "در به عنوان",
 
-        "Reg کریپتو",
-
-        "Reg crypto",
-
         "Click here",
-
         "Read more",
-
         "Continue reading",
+
+        "This article",
+        "This post",
 
     ]
 
     lowered = text.lower()
 
-    for bad in bad_words:
+    for phrase in bad_phrases:
 
-        if bad.lower() in lowered:
+        if phrase.lower() in lowered:
             return False
 
-    # ترجمه نباید تقریباً کاملاً انگلیسی باقی مانده باشد
-    letters = re.findall(
-        r"[A-Za-z]",
-        text
+    # --------------------------------------------------------
+    # ترجمه خیلی کوتاه
+    # --------------------------------------------------------
+
+    if len(text.split()) < 3:
+        return False
+
+    # --------------------------------------------------------
+    # اگر متن انگلیسی بوده، ترجمه باید فارسی باشد.
+    # --------------------------------------------------------
+
+    persian_chars = len(
+        re.findall(
+            r"[\u0600-\u06FF]",
+            text
+        )
     )
 
-    persian = re.findall(
-        r"[\u0600-\u06FF]",
-        text
+    english_chars = len(
+        re.findall(
+            r"[A-Za-z]",
+            text
+        )
     )
 
-    if len(text) > 50:
+    if len(text) >= 50:
+
+        if persian_chars == 0:
+            return False
 
         if (
-            len(letters)
-            > len(persian) * 2
+            english_chars
+            > persian_chars * 2
         ):
             return False
 
-    return len(
-        text.split()
-    ) >= 4
+    # --------------------------------------------------------
+    # اگر خروجی دقیقاً برابر متن انگلیسی باشد
+    # --------------------------------------------------------
+
+    if original:
+
+        original_clean = clean_text(
+            original
+        ).lower()
+
+        translated_clean = clean_text(
+            text
+        ).lower()
+
+        if (
+            original_clean
+            and translated_clean == original_clean
+        ):
+            if english_chars > persian_chars:
+                return False
+
+    return True
 
 
 # ============================================================
-# Shorten
+# Shorten text
 # ============================================================
 
 def shorten(
@@ -636,10 +769,40 @@ def shorten(
     if not text:
         return ""
 
+    text = clean_text(
+        text
+    )
+
     if len(text) <= limit:
         return text
 
     shortened = text[:limit]
+
+    # --------------------------------------------------------
+    # اول سعی می‌کنیم در انتهای جمله قطع کنیم.
+    # --------------------------------------------------------
+
+    sentence_positions = [
+
+        shortened.rfind("۔"),
+        shortened.rfind("."),
+        shortened.rfind("؟"),
+        shortened.rfind("!"),
+    ]
+
+    sentence_end = max(
+        sentence_positions
+    )
+
+    if sentence_end >= limit * 0.70:
+
+        return shortened[
+            :sentence_end + 1
+        ].strip()
+
+    # --------------------------------------------------------
+    # اگر جمله مناسب نبود، روی فاصله قطع می‌کنیم.
+    # --------------------------------------------------------
 
     last_space = shortened.rfind(
         " "
@@ -657,6 +820,55 @@ def shorten(
 
 
 # ============================================================
+# Remove duplicated sentences
+# ============================================================
+
+def remove_duplicate_sentences(text):
+
+    if not text:
+        return ""
+
+    sentences = re.split(
+        r"(?<=[.!؟])\s+",
+        text
+    )
+
+    result = []
+    seen = set()
+
+    for sentence in sentences:
+
+        sentence = sentence.strip()
+
+        if not sentence:
+            continue
+
+        normalized = re.sub(
+            r"\W+",
+            "",
+            sentence.lower()
+        )
+
+        if (
+            normalized
+            and normalized in seen
+        ):
+            continue
+
+        seen.add(
+            normalized
+        )
+
+        result.append(
+            sentence
+        )
+
+    return " ".join(
+        result
+    )
+
+
+# ============================================================
 # Main translator
 # ============================================================
 
@@ -664,6 +876,10 @@ def translate_text(text):
 
     if not text:
         return ""
+
+    # --------------------------------------------------------
+    # Original text
+    # --------------------------------------------------------
 
     original = clean_text(
         text
@@ -673,39 +889,133 @@ def translate_text(text):
         return ""
 
     # --------------------------------------------------------
-    # تاریخ‌ها را قبل از ترجمه به شمسی تبدیل می‌کنیم
+    # تاریخ‌ها قبل از ترجمه تبدیل نمی‌شوند.
+    #
+    # ابتدا تاریخ‌ها را محافظت می‌کنیم تا Google Translate
+    # آنها را خراب نکند.
     # --------------------------------------------------------
 
-    original = convert_dates_to_jalali(
-        original
+    date_protected = {}
+
+    date_counter = 0
+
+    month_pattern = "|".join(
+        MONTHS.keys()
     )
+
+    date_patterns = [
+
+        re.compile(
+            r"\b("
+            + month_pattern
+            + r")\s+"
+            r"(\d{1,2})"
+            r"(?:,\s*|\s+)"
+            r"(\d{4})\b",
+            re.IGNORECASE
+        ),
+
+        re.compile(
+            r"\b"
+            r"(\d{1,2})\s+("
+            + month_pattern
+            + r")\s+"
+            r"(\d{4})\b",
+            re.IGNORECASE
+        ),
+    ]
+
+    working_text = original
+
+    for pattern in date_patterns:
+
+        def protect_date(match):
+
+            nonlocal date_counter
+
+            marker = (
+                f"XQDATE{date_counter}QX"
+            )
+
+            if match.group(1).lower() in MONTHS:
+
+                month = MONTHS[
+                    match.group(1).lower()
+                ]
+
+                day = int(
+                    match.group(2)
+                )
+
+                year = int(
+                    match.group(3)
+                )
+
+            else:
+
+                day = int(
+                    match.group(1)
+                )
+
+                month = MONTHS[
+                    match.group(2).lower()
+                ]
+
+                year = int(
+                    match.group(3)
+                )
+
+            converted = convert_date(
+                year,
+                month,
+                day
+            )
+
+            if converted:
+
+                date_protected[
+                    marker
+                ] = converted
+
+                date_counter += 1
+
+                return marker
+
+            return match.group(0)
+
+        working_text = pattern.sub(
+            protect_date,
+            working_text
+        )
 
     try:
 
         # ----------------------------------------------------
-        # محافظت از اصطلاحات تخصصی
+        # Protect technical terms
         # ----------------------------------------------------
 
         protected_text, protected = protect_terms(
-            original
+            working_text
         )
 
         # ----------------------------------------------------
         # Google Translate
         # ----------------------------------------------------
 
-        translated = GoogleTranslator(
+        translator = GoogleTranslator(
             source="en",
             target="fa"
-        ).translate(
+        )
+
+        translated = translator.translate(
             protected_text
         )
 
         if not translated:
-            return original
+            return ""
 
         # ----------------------------------------------------
-        # برگرداندن اصطلاحات
+        # Restore technical terms
         # ----------------------------------------------------
 
         translated = restore_terms(
@@ -714,7 +1024,18 @@ def translate_text(text):
         )
 
         # ----------------------------------------------------
-        # پاک‌سازی
+        # Restore Jalali dates
+        # ----------------------------------------------------
+
+        for marker, date_value in date_protected.items():
+
+            translated = translated.replace(
+                marker,
+                date_value
+            )
+
+        # ----------------------------------------------------
+        # Clean
         # ----------------------------------------------------
 
         translated = clean_text(
@@ -722,7 +1043,18 @@ def translate_text(text):
         )
 
         # ----------------------------------------------------
-        # اصلاح تاریخ‌ها
+        # Remove duplicate sentences
+        # ----------------------------------------------------
+
+        translated = remove_duplicate_sentences(
+            translated
+        )
+
+        # ----------------------------------------------------
+        # Final date conversion
+        #
+        # برای تاریخ‌هایی که Google Translate خودش تغییر
+        # داده باشد.
         # ----------------------------------------------------
 
         translated = convert_dates_to_jalali(
@@ -730,32 +1062,39 @@ def translate_text(text):
         )
 
         # ----------------------------------------------------
-        # بررسی کیفیت
+        # Quality check
         # ----------------------------------------------------
 
         if not good_translation(
-            translated
+            translated,
+            original
         ):
 
-            return original
+            print(
+                "⚠️ ترجمه از نظر کیفیت قابل قبول نبود"
+            )
+
+            return ""
 
         # ----------------------------------------------------
-        # محدود کردن طول
+        # Limit length
         # ----------------------------------------------------
 
-        return shorten(
+        translated = shorten(
             translated,
             1200
         )
 
+        return translated
+
     except Exception as e:
 
         print(
-            "خطا در ترجمه:",
+            "❌ خطا در ترجمه:",
             e
         )
 
-        return original
+        return ""
 
 
 # ============================================================
@@ -767,27 +1106,58 @@ if __name__ == "__main__":
     tests = [
 
         """
-        The Federal Reserve is expected to keep interest rates unchanged on August 12, 2026.
-        Investors are watching the decision closely.
+        The Federal Reserve is expected to keep interest rates
+        unchanged on August 12, 2026. Investors are watching
+        the decision closely.
         """,
 
         """
-        Metaplanet moved more than 5,000 Bitcoin on August 12, 2026,
-        raising speculation that the company could sell part of its holdings.
+        Metaplanet moved more than 5,000 Bitcoin on August 12,
+        2026, raising speculation that the company could sell
+        part of its holdings.
         """,
 
         """
-        The SEC postponed the long-awaited crypto regulation meeting.
+        The SEC postponed the long-awaited crypto regulation
+        meeting.
         """,
 
+        """
+        Bitcoin surged after investors reacted to the latest
+        Federal Reserve decision.
+        """,
+
+        """
+        The company announced a major Bitcoin purchase and said
+        it plans to continue expanding its holdings.
+        """,
     ]
 
     for test in tests:
 
         print(
-            "\n--------------------------------"
+            "\n"
+            + "=" * 60
         )
 
         print(
-            translate_text(test)
+            "ORIGINAL:"
+        )
+
+        print(
+            clean_text(test)
+        )
+
+        print(
+            "\nTRANSLATED:"
+        )
+
+        result = translate_text(
+            test
+        )
+
+        print(
+            result
+            if result
+            else "❌ ترجمه قابل قبول نبود"
         )
