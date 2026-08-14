@@ -33,8 +33,9 @@ IMPORTANT_TOPICS = {
     # Bitcoin / Crypto
     # --------------------------------------------------------
 
-    "bitcoin etf": 12,
-    "ethereum etf": 10,
+    "bitcoin etf": 14,
+    "ethereum etf": 12,
+    "crypto etf": 11,
 
     "bitcoin": 10,
     "ethereum": 8,
@@ -47,9 +48,9 @@ IMPORTANT_TOPICS = {
     # Regulation
     # --------------------------------------------------------
 
-    "crypto regulation": 12,
-    "regulation": 9,
-    "regulatory": 9,
+    "crypto regulation": 13,
+    "regulation": 8,
+    "regulatory": 8,
 
     "sec": 10,
     "cftc": 9,
@@ -58,7 +59,7 @@ IMPORTANT_TOPICS = {
     # US government / Trump
     # --------------------------------------------------------
 
-    "donald trump": 12,
+    "donald trump": 13,
     "trump": 10,
     "white house": 9,
 
@@ -66,29 +67,29 @@ IMPORTANT_TOPICS = {
     # Federal Reserve / Economy
     # --------------------------------------------------------
 
-    "federal reserve": 12,
+    "federal reserve": 13,
 
     "interest rates": 10,
     "interest rate": 10,
 
-    "rate cut": 11,
-    "rate cuts": 11,
+    "rate cut": 12,
+    "rate cuts": 12,
 
-    "rate hike": 10,
-    "rate hikes": 10,
+    "rate hike": 11,
+    "rate hikes": 11,
 
-    "inflation": 9,
-    "recession": 9,
+    "inflation": 10,
+    "recession": 10,
 
     # --------------------------------------------------------
     # Market events
     # --------------------------------------------------------
 
-    "crash": 11,
-    "collapse": 11,
+    "crash": 12,
+    "collapse": 12,
 
-    "plunges": 9,
-    "plunge": 9,
+    "plunges": 10,
+    "plunge": 10,
 
     "surge": 8,
     "surges": 8,
@@ -100,32 +101,32 @@ IMPORTANT_TOPICS = {
     # Security
     # --------------------------------------------------------
 
-    "security breach": 11,
-    "data breach": 11,
+    "security breach": 12,
+    "data breach": 12,
 
-    "hacked": 11,
-    "hack": 10,
+    "hacked": 12,
+    "hack": 11,
 
     # --------------------------------------------------------
     # Geopolitics
     # --------------------------------------------------------
 
     "war": 9,
-    "sanctions": 8,
+    "sanctions": 9,
 
     # --------------------------------------------------------
     # ETF / Institutional
     # --------------------------------------------------------
 
-    "institutional": 7,
-    "etf": 8,
+    "institutional": 6,
+    "etf": 3,
 
     # --------------------------------------------------------
     # Company actions
     # --------------------------------------------------------
 
-    "bankruptcy": 11,
-    "liquidation": 10,
+    "bankruptcy": 12,
+    "liquidation": 11,
 
     "acquisition": 8,
     "merger": 8,
@@ -164,14 +165,12 @@ def normalize_text(text):
 
     text = str(text)
 
-    # حذف HTML
     text = re.sub(
         r"<[^>]+>",
         " ",
         text
     )
 
-    # فاصله‌های اضافی
     text = re.sub(
         r"\s+",
         " ",
@@ -191,14 +190,12 @@ def normalize_title(title):
         title
     ).lower()
 
-    # حذف علائم نگارشی
     title = re.sub(
         r"[^\w\s]",
         " ",
         title
     )
 
-    # فاصله‌های اضافی
     title = re.sub(
         r"\s+",
         " ",
@@ -212,14 +209,21 @@ def normalize_title(title):
 # Title similarity
 # ============================================================
 
-def title_similarity(title1, title2):
+def title_similarity(
+    title1,
+    title2
+):
 
     a = set(
-        normalize_title(title1).split()
+        normalize_title(
+            title1
+        ).split()
     )
 
     b = set(
-        normalize_title(title2).split()
+        normalize_title(
+            title2
+        ).split()
     )
 
     if not a or not b:
@@ -274,7 +278,7 @@ def remove_duplicate_news(news):
                 existing_title
             )
 
-            # شباهت 75 درصد یا بیشتر
+            # شباهت خیلی بالا
             if similarity >= 0.75:
 
                 duplicate = True
@@ -293,39 +297,22 @@ def remove_duplicate_news(news):
 # Keyword matching
 # ============================================================
 
-def contains_keyword(text, keyword):
+def contains_keyword(
+    text,
+    keyword
+):
 
     if not text or not keyword:
         return False
 
-    text = text.lower().strip()
-    keyword = keyword.lower().strip()
+    text = str(text).lower()
+    keyword = str(keyword).lower().strip()
 
-    # --------------------------------------------------------
-    # برای عبارت‌های چندکلمه‌ای
-    # --------------------------------------------------------
-
-    if " " in keyword:
-
-        pattern = (
-            r"(?<![a-z0-9])"
-            + re.escape(keyword)
-            + r"(?![a-z0-9])"
-        )
-
-    else:
-
-        # جلوگیری از خطاهایی مثل:
-        #
-        # fed -> offered
-        # sec -> sector
-        # war -> warehouse
-        #
-        pattern = (
-            r"(?<![a-z0-9])"
-            + re.escape(keyword)
-            + r"(?![a-z0-9])"
-        )
+    pattern = (
+        r"(?<![a-z0-9])"
+        + re.escape(keyword)
+        + r"(?![a-z0-9])"
+    )
 
     return re.search(
         pattern,
@@ -354,8 +341,6 @@ def calculate_importance_score(news):
         )
     ).lower()
 
-    # عنوان اهمیت بیشتری دارد
-    title_text = title
     full_text = (
         title
         + " "
@@ -366,50 +351,56 @@ def calculate_importance_score(news):
 
     matched_topics = set()
 
-    # --------------------------------------------------------
-    # Topics
-    # --------------------------------------------------------
+    # ========================================================
+    # Important topics
+    # ========================================================
 
     for keyword, points in IMPORTANT_TOPICS.items():
 
         if keyword in matched_topics:
             continue
 
-        if contains_keyword(
+        title_match = contains_keyword(
+            title,
+            keyword
+        )
+
+        full_match = contains_keyword(
             full_text,
             keyword
-        ):
+        )
 
-            # اگر کلمه در عنوان باشد، اهمیت بیشتری دارد
-            if contains_keyword(
-                title_text,
-                keyword
-            ):
+        if not full_match:
+            continue
 
-                score += points
+        if title_match:
 
-            else:
+            # عنوان وزن کامل می‌گیرد
+            score += points
 
-                score += points * 0.60
+        else:
 
-            matched_topics.add(
-                keyword
-            )
+            # متن وزن کمتر می‌گیرد
+            score += points * 0.45
 
-    # --------------------------------------------------------
+        matched_topics.add(
+            keyword
+        )
+
+    # ========================================================
     # Urgent
-    # --------------------------------------------------------
+    # ========================================================
 
     if news.get(
         "urgent",
         False
     ):
 
-        score += 6
+        score += 5
 
-    # --------------------------------------------------------
+    # ========================================================
     # Source
-    # --------------------------------------------------------
+    # ========================================================
 
     source = news.get(
         "source",
@@ -424,6 +415,123 @@ def calculate_importance_score(news):
     return round(
         score,
         2
+    )
+
+
+# ============================================================
+# Topic focus score
+#
+# خبر تک‌موضوعی امتیاز بیشتری می‌گیرد.
+# ============================================================
+
+def calculate_focus_score(news):
+
+    title = normalize_text(
+        news.get(
+            "title",
+            ""
+        )
+    )
+
+    description = normalize_text(
+        news.get(
+            "description",
+            ""
+        )
+    )
+
+    topic_groups = news.get(
+        "topic_groups",
+        []
+    )
+
+    if not isinstance(
+        topic_groups,
+        list
+    ):
+
+        topic_groups = []
+
+    topic_count = len(
+        set(topic_groups)
+    )
+
+    score = 15
+
+    # --------------------------------------------------------
+    # اگر Scraper آن را roundup تشخیص داده
+    # --------------------------------------------------------
+
+    if news.get(
+        "aggregated",
+        False
+    ):
+
+        score -= 35
+
+    # --------------------------------------------------------
+    # تعداد حوزه‌ها
+    # --------------------------------------------------------
+
+    if topic_count <= 1:
+
+        score += 15
+
+    elif topic_count == 2:
+
+        score += 5
+
+    elif topic_count == 3:
+
+        score -= 10
+
+    elif topic_count >= 4:
+
+        score -= 30
+
+    # --------------------------------------------------------
+    # عنوان چندموضوعی
+    # --------------------------------------------------------
+
+    title_lower = title.lower()
+
+    separators = [
+        " and ",
+        " as ",
+        " while ",
+        " amid ",
+        " plus ",
+        ";",
+        ":",
+    ]
+
+    separator_count = 0
+
+    for separator in separators:
+
+        separator_count += title_lower.count(
+            separator
+        )
+
+    if separator_count >= 3:
+
+        score -= 10
+
+    # --------------------------------------------------------
+    # متن بسیار طولانی
+    # --------------------------------------------------------
+
+    if len(description) > 1000:
+
+        score -= 5
+
+    if len(description) > 1400:
+
+        score -= 10
+
+    return max(
+        round(score, 2),
+        0
     )
 
 
@@ -454,13 +562,15 @@ def calculate_completeness_score(news):
     # --------------------------------------------------------
 
     if len(title) >= 30:
+
         score += 5
 
     if len(title) >= 60:
+
         score += 3
 
     # --------------------------------------------------------
-    # Description length
+    # Description
     # --------------------------------------------------------
 
     description_length = len(
@@ -468,15 +578,19 @@ def calculate_completeness_score(news):
     )
 
     if description_length >= 100:
+
         score += 10
 
     if description_length >= 200:
+
         score += 10
 
     if description_length >= 350:
+
         score += 10
 
     if description_length >= 500:
+
         score += 5
 
     # --------------------------------------------------------
@@ -488,12 +602,15 @@ def calculate_completeness_score(news):
     )
 
     if word_count >= 30:
+
         score += 5
 
     if word_count >= 60:
+
         score += 5
 
     if word_count >= 100:
+
         score += 5
 
     # --------------------------------------------------------
@@ -508,9 +625,11 @@ def calculate_completeness_score(news):
     )
 
     if sentence_count >= 2:
+
         score += 5
 
     if sentence_count >= 3:
+
         score += 5
 
     return score
@@ -545,7 +664,7 @@ def calculate_clarity_score(news):
     score = 20
 
     # --------------------------------------------------------
-    # Description length
+    # Description
     # --------------------------------------------------------
 
     if len(description) == 0:
@@ -584,7 +703,7 @@ def calculate_clarity_score(news):
         score -= 5
 
     # --------------------------------------------------------
-    # Title repeated inside description
+    # Title repeated in description
     # --------------------------------------------------------
 
     normalized_title = normalize_title(
@@ -648,11 +767,8 @@ def calculate_freshness_score(news):
         return 0
 
     if date.year == 1:
-        return 0
 
-    # --------------------------------------------------------
-    # اطمینان از timezone
-    # --------------------------------------------------------
+        return 0
 
     if date.tzinfo is None:
 
@@ -674,26 +790,92 @@ def calculate_freshness_score(news):
         now - date
     ).total_seconds() / 3600
 
-    # خبر آینده / تاریخ خراب
     if hours < 0:
+
         return 0
 
     if hours <= 2:
+
         return 10
 
     if hours <= 6:
+
         return 8
 
     if hours <= 12:
+
         return 6
 
     if hours <= 24:
+
         return 4
 
     if hours <= 48:
+
         return 2
 
     return 0
+
+
+# ============================================================
+# News quality score
+#
+# بررسی می‌کند خبر واقعاً یک خبر مستقل است یا نه.
+# ============================================================
+
+def calculate_quality_score(news):
+
+    title = normalize_text(
+        news.get(
+            "title",
+            ""
+        )
+    )
+
+    description = normalize_text(
+        news.get(
+            "description",
+            ""
+        )
+    )
+
+    score = 10
+
+    # عنوان خیلی کوتاه
+    if len(title) < 25:
+
+        score -= 5
+
+    # description خیلی کوتاه
+    if len(description) < 80:
+
+        score -= 5
+
+    # خبرهای خیلی طولانی
+    if len(description) > 1500:
+
+        score -= 5
+
+    # تعداد زیاد جمله
+    sentence_count = len(
+        re.findall(
+            r"[.!?]",
+            description
+        )
+    )
+
+    if sentence_count >= 8:
+
+        score -= 5
+
+    if sentence_count >= 12:
+
+        score -= 5
+
+    return max(
+        score,
+        0
+    )
 
 
 # ============================================================
@@ -718,36 +900,53 @@ def calculate_score(news):
         news
     )
 
-    # --------------------------------------------------------
+    focus = calculate_focus_score(
+        news
+    )
+
+    quality = calculate_quality_score(
+        news
+    )
+
+    # ========================================================
     # وزن‌ها
     #
-    # اهمیت        35%
-    # کامل بودن    25%
-    # واضح بودن    25%
-    # تازگی        15%
+    # اهمیت       35%
+    # کامل بودن   20%
+    # واضح بودن   15%
+    # تمرکز خبر   20%
+    # تازگی       10%
     #
-    # --------------------------------------------------------
+    # Quality به صورت bonus/penalty کوچک
+    # ========================================================
 
     final_score = (
 
         importance * 0.35
 
-        + completeness * 0.25
+        + completeness * 0.20
 
-        + clarity * 0.25
+        + clarity * 0.15
 
-        + freshness * 0.15
+        + focus * 0.20
+
+        + freshness * 0.10
 
     )
 
+    # Quality adjustment
+    final_score += (
+        quality - 10
+    ) * 0.5
+
     return round(
-        final_score,
+        max(final_score, 0),
         2
     )
 
 
 # ============================================================
-# Safe date value for sorting
+# Safe date value
 # ============================================================
 
 def safe_date_value(news):
@@ -783,6 +982,7 @@ def safe_date_value(news):
 def rank_news(news_list):
 
     if not news_list:
+
         return []
 
     # --------------------------------------------------------
@@ -798,30 +998,54 @@ def rank_news(news_list):
     for news in news_list:
 
         if not news:
+
             continue
 
         item = dict(
             news
         )
 
+        # ----------------------------------------------------
+        # امتیازهای جزئی
+        # ----------------------------------------------------
+
+        item["importance_score"] = (
+            calculate_importance_score(
+                item
+            )
+        )
+
+        item["completeness_score"] = (
+            calculate_completeness_score(
+                item
+            )
+        )
+
+        item["clarity_score"] = (
+            calculate_clarity_score(
+                item
+            )
+        )
+
+        item["freshness_score"] = (
+            calculate_freshness_score(
+                item
+            )
+        )
+
+        item["focus_score"] = (
+            calculate_focus_score(
+                item
+            )
+        )
+
+        item["quality_score"] = (
+            calculate_quality_score(
+                item
+            )
+        )
+
         item["score"] = calculate_score(
-            item
-        )
-
-        # امتیازهای جزئی برای Debug
-        item["importance_score"] = calculate_importance_score(
-            item
-        )
-
-        item["completeness_score"] = calculate_completeness_score(
-            item
-        )
-
-        item["clarity_score"] = calculate_clarity_score(
-            item
-        )
-
-        item["freshness_score"] = calculate_freshness_score(
             item
         )
 
@@ -831,15 +1055,16 @@ def rank_news(news_list):
 
     # --------------------------------------------------------
     # رتبه‌بندی
-    #
-    # اول امتیاز
-    # سپس تازگی
     # --------------------------------------------------------
 
     ranked.sort(
         key=lambda x: (
             x.get(
                 "score",
+                0
+            ),
+            x.get(
+                "focus_score",
                 0
             ),
             x.get(
@@ -865,7 +1090,43 @@ def select_best_news(news_list):
     )
 
     if not ranked:
+
         return None
+
+    # ========================================================
+    # ترجیح شدید به خبر مستقل
+    #
+    # اگر بهترین خبر roundup باشد ولی خبر مستقل مناسبی
+    # وجود داشته باشد، خبر مستقل انتخاب می‌شود.
+    # ========================================================
+
+    independent_news = [
+
+        item
+
+        for item in ranked
+
+        if not item.get(
+            "aggregated",
+            False
+        )
+
+    ]
+
+    if independent_news:
+
+        # اگر خبر مستقل امتیاز قابل قبول دارد،
+        # آن را به roundup ترجیح بده.
+        best_independent = independent_news[0]
+
+        best_overall = ranked[0]
+
+        if best_overall.get(
+            "aggregated",
+            False
+        ):
+
+            return best_independent
 
     return ranked[0]
 
@@ -885,6 +1146,7 @@ def filter_news(news_list):
     )
 
     if best is None:
+
         return []
 
     return [
@@ -917,6 +1179,12 @@ if __name__ == "__main__":
 
             "urgent": False,
 
+            "aggregated": False,
+
+            "topic_groups": [
+                "economy"
+            ],
+
             "date": datetime.now(
                 timezone.utc
             ),
@@ -937,6 +1205,12 @@ if __name__ == "__main__":
 
             "urgent": False,
 
+            "aggregated": False,
+
+            "topic_groups": [
+                "crypto"
+            ],
+
             "date": datetime.now(
                 timezone.utc
             ),
@@ -956,6 +1230,50 @@ if __name__ == "__main__":
             ),
 
             "urgent": True,
+
+            "aggregated": False,
+
+            "topic_groups": [
+                "crypto",
+                "etf"
+            ],
+
+            "date": datetime.now(
+                timezone.utc
+            ),
+        },
+
+        {
+            "source": "CNBC",
+
+            "title": (
+                "Stocks rise as Trump discusses Iran "
+                "while Bitcoin and oil move higher"
+            ),
+
+            "description": (
+                "US stocks moved higher in morning trading. "
+                "President Trump discussed Iran and new "
+                "sanctions. Bitcoin also gained while oil "
+                "prices rose. OpenAI announced a separate "
+                "business update. Investors are watching "
+                "the Federal Reserve. "
+                "Markets also reacted to new developments "
+                "in China and Europe."
+            ),
+
+            "urgent": True,
+
+            "aggregated": True,
+
+            "topic_groups": [
+                "stocks",
+                "geopolitics",
+                "crypto",
+                "oil",
+                "companies",
+                "fed"
+            ],
 
             "date": datetime.now(
                 timezone.utc
@@ -1010,6 +1328,22 @@ if __name__ == "__main__":
         )
 
         print(
+            "Aggregated:",
+            item.get(
+                "aggregated",
+                False
+            )
+        )
+
+        print(
+            "Topics:",
+            item.get(
+                "topic_groups",
+                []
+            )
+        )
+
+        print(
             "Importance:",
             item.get(
                 "importance_score",
@@ -1029,6 +1363,22 @@ if __name__ == "__main__":
             "Clarity:",
             item.get(
                 "clarity_score",
+                0
+            )
+        )
+
+        print(
+            "Focus:",
+            item.get(
+                "focus_score",
+                0
+            )
+        )
+
+        print(
+            "Quality:",
+            item.get(
+                "quality_score",
                 0
             )
         )
@@ -1080,6 +1430,14 @@ if __name__ == "__main__":
             best.get(
                 "title",
                 ""
+            )
+        )
+
+        print(
+            "Aggregated:",
+            best.get(
+                "aggregated",
+                False
             )
         )
 
