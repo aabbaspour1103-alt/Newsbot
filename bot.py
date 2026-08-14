@@ -26,7 +26,7 @@ CHANNEL_ID = os.getenv("CHANNEL_ID")
 # Text cleaning
 # ============================================================
 
-def clean_text(text):
+def clean_text(text, preserve_lines=False):
 
     if not text:
         return ""
@@ -68,7 +68,7 @@ def clean_text(text):
     )
 
     # --------------------------------------------------------
-    # حذف entity
+    # حذف HTML entity
     # --------------------------------------------------------
 
     text = re.sub(
@@ -95,40 +95,59 @@ def clean_text(text):
     )
 
     # --------------------------------------------------------
-    # فاصله‌های اضافی
+    # فاصله‌ها
     # --------------------------------------------------------
 
-    text = re.sub(
-        r"[\r\n\t]+",
-        " ",
-        text
-    )
+    if preserve_lines:
 
-    text = re.sub(
-        r"\s+",
-        " ",
-        text
-    )
+        # خطوط خالی اضافی
+        text = re.sub(
+            r"[ \t]+",
+            " ",
+            text
+        )
+
+        text = re.sub(
+            r"\n\s*\n\s*\n+",
+            "\n\n",
+            text
+        )
+
+    else:
+
+        text = re.sub(
+            r"[\r\n\t]+",
+            " ",
+            text
+        )
+
+        text = re.sub(
+            r"\s+",
+            " ",
+            text
+        )
 
     # --------------------------------------------------------
     # حذف کلمات تکراری پشت سر هم
     # --------------------------------------------------------
 
-    words = text.split()
+    if not preserve_lines:
 
-    fixed_words = []
+        words = text.split()
 
-    for word in words:
+        fixed_words = []
 
-        if (
-            not fixed_words
-            or word != fixed_words[-1]
-        ):
-            fixed_words.append(word)
+        for word in words:
 
-    text = " ".join(
-        fixed_words
-    )
+            if (
+                not fixed_words
+                or word != fixed_words[-1]
+            ):
+                fixed_words.append(word)
+
+        text = " ".join(
+            fixed_words
+        )
 
     # --------------------------------------------------------
     # اصلاح فاصله قبل از علائم
@@ -196,11 +215,17 @@ def valid_news(news):
         )
     )
 
-    # عنوان خیلی کوتاه نباشد
+    # --------------------------------------------------------
+    # عنوان باید قابل قبول باشد
+    # --------------------------------------------------------
+
     if len(title) < 15:
         return False
 
+    # --------------------------------------------------------
     # متن غیرعادی بزرگ نباشد
+    # --------------------------------------------------------
+
     if len(description) > 3000:
         return False
 
@@ -237,6 +262,8 @@ def translation_quality(
         "undefined",
         "None",
         "ZZTERM",
+        "XQTERM",
+        "XQDATE",
 
         "سوار شد",
 
@@ -256,6 +283,9 @@ def translation_quality(
         "Read more",
         "Continue reading",
 
+        "This article",
+        "This post",
+
     ]
 
     lowered = text.lower()
@@ -263,11 +293,10 @@ def translation_quality(
     for word in bad_words:
 
         if word.lower() in lowered:
-
             score -= 40
 
     # --------------------------------------------------------
-    # اگر متن انگلیسی اصلی را تقریباً دست‌نخورده برگرداند
+    # اگر ترجمه تقریباً همان متن انگلیسی باشد
     # --------------------------------------------------------
 
     if original:
@@ -282,7 +311,23 @@ def translation_quality(
             len(original_clean) > 30
             and translated_clean == original_clean
         ):
-            return 0
+
+            english_chars = len(
+                re.findall(
+                    r"[A-Za-z]",
+                    text
+                )
+            )
+
+            persian_chars = len(
+                re.findall(
+                    r"[\u0600-\u06FF]",
+                    text
+                )
+            )
+
+            if english_chars > persian_chars:
+                return 0
 
     # --------------------------------------------------------
     # بررسی فارسی بودن
@@ -313,18 +358,18 @@ def translation_quality(
             score -= 35
 
     # --------------------------------------------------------
-    # متن خیلی کوتاه
+    # تعداد کلمات
     # --------------------------------------------------------
 
     word_count = len(
         text.split()
     )
 
-    if word_count < 4:
+    if word_count < 3:
 
         score -= 40
 
-    elif word_count < 6:
+    elif word_count < 5:
 
         score -= 15
 
@@ -411,7 +456,7 @@ def translate_news(news):
     )
 
     # --------------------------------------------------------
-    # امتیاز ترجمه
+    # امتیاز ترجمه عنوان
     # --------------------------------------------------------
 
     title_score = translation_quality(
@@ -419,19 +464,32 @@ def translate_news(news):
         original_title
     )
 
-    description_score = translation_quality(
-        translated_description,
-        original_description
-    )
+    # --------------------------------------------------------
+    # امتیاز ترجمه توضیحات
+    # --------------------------------------------------------
 
-    # اگر توضیح وجود داشته باشد،
-    # عنوان و توضیح هر دو اهمیت دارند.
+    if original_description:
+
+        description_score = translation_quality(
+            translated_description,
+            original_description
+        )
+
+    else:
+
+        description_score = 100
+
+    # --------------------------------------------------------
+    # امتیاز کلی ترجمه
+    #
+    # عنوان مهم‌تر است.
+    # --------------------------------------------------------
 
     if original_description:
 
         translation_score = (
-            title_score * 0.45
-            + description_score * 0.55
+            title_score * 0.55
+            + description_score * 0.45
         )
 
     else:
@@ -449,6 +507,20 @@ def translate_news(news):
     translated[
         "translated_description"
     ] = translated_description
+
+    translated[
+        "title_translation_score"
+    ] = round(
+        title_score,
+        2
+    )
+
+    translated[
+        "description_translation_score"
+    ] = round(
+        description_score,
+        2
+    )
 
     translated[
         "translation_score"
@@ -472,7 +544,7 @@ def select_best_translated_news(
         return None
 
     # --------------------------------------------------------
-    # فقط 5 خبر برتر را ترجمه می‌کنیم
+    # فقط 5 خبر برتر ترجمه می‌شوند
     # --------------------------------------------------------
 
     candidates = ranked_news[:5]
@@ -488,19 +560,108 @@ def select_best_translated_news(
             news
         )
 
+        title_score = translated.get(
+            "title_translation_score",
+            0
+        )
+
+        description_score = translated.get(
+            "description_translation_score",
+            0
+        )
+
         translation_score = translated.get(
             "translation_score",
             0
         )
 
+        translated_title = translated.get(
+            "translated_title",
+            ""
+        )
+
+        translated_description = translated.get(
+            "translated_description",
+            ""
+        )
+
         # ----------------------------------------------------
-        # ترجمه خیلی ضعیف نباید منتشر شود
+        # عنوان خراب = خبر کاملاً رد شود
+        # ----------------------------------------------------
+
+        if not translated_title:
+
+            print(
+                "⚠️ عنوان ترجمه نشد؛ خبر رد شد:",
+                news.get(
+                    "title",
+                    ""
+                )
+            )
+
+            continue
+
+        if title_score < 60:
+
+            print(
+                "⚠️ کیفیت عنوان پایین؛ خبر رد شد:",
+                news.get(
+                    "title",
+                    ""
+                ),
+                "امتیاز:",
+                title_score
+            )
+
+            continue
+
+        # ----------------------------------------------------
+        # اگر توضیح وجود داشته و ترجمه خراب باشد،
+        # خود خبر را حذف نمی‌کنیم.
+        #
+        # فقط توضیح خراب را منتشر نمی‌کنیم.
+        # ----------------------------------------------------
+
+        if (
+            news.get(
+                "description",
+                ""
+            )
+            and description_score < 45
+        ):
+
+            print(
+                "⚠️ توضیحات ترجمه ضعیف است؛ توضیحات حذف شد:",
+                news.get(
+                    "title",
+                    ""
+                ),
+                "امتیاز:",
+                description_score
+            )
+
+            translated[
+                "translated_description"
+            ] = ""
+
+            # امتیاز ترجمه را بر اساس عنوان محاسبه می‌کنیم
+            translated[
+                "translation_score"
+            ] = round(
+                title_score,
+                2
+            )
+
+            translation_score = title_score
+
+        # ----------------------------------------------------
+        # کیفیت کلی خیلی پایین
         # ----------------------------------------------------
 
         if translation_score < 55:
 
             print(
-                "⚠️ ترجمه ضعیف؛ خبر رد شد:",
+                "⚠️ کیفیت کلی ترجمه پایین؛ خبر رد شد:",
                 news.get(
                     "title",
                     ""
@@ -509,12 +670,6 @@ def select_best_translated_news(
                 translation_score
             )
 
-            continue
-
-        # عنوان ترجمه‌شده حتماً باید وجود داشته باشد
-        if not translated.get(
-            "translated_title"
-        ):
             continue
 
         translated_candidates.append(
@@ -566,8 +721,11 @@ def select_best_translated_news(
                 "score",
                 0
             ),
-            x.get(
-                "date"
+            str(
+                x.get(
+                    "date",
+                    ""
+                )
             )
         ),
         reverse=True
@@ -609,7 +767,7 @@ def build_message(news):
     )
 
     # --------------------------------------------------------
-    # عنوان
+    # عنوان خبر
     # --------------------------------------------------------
 
     if urgent:
@@ -619,6 +777,15 @@ def build_message(news):
     else:
 
         header = "📰 اخبــار بـازار"
+
+    # --------------------------------------------------------
+    # اگر عنوان وجود نداشته باشد،
+    # اصلاً پیام ساخته نشود.
+    # --------------------------------------------------------
+
+    if not title:
+
+        return ""
 
     # --------------------------------------------------------
     # ساخت پیام
@@ -634,6 +801,10 @@ def build_message(news):
 
     ]
 
+    # --------------------------------------------------------
+    # توضیحات فقط اگر معتبر باشند
+    # --------------------------------------------------------
+
     if description:
 
         parts.extend([
@@ -641,19 +812,30 @@ def build_message(news):
             description,
         ])
 
+    # --------------------------------------------------------
+    # منبع
+    # --------------------------------------------------------
+
     parts.extend([
         "",
         f"📰 منبع: {source}",
         "@CryptoBrew",
     ])
 
+    # --------------------------------------------------------
+    # پاک‌سازی بدون از بین بردن خطوط
+    # --------------------------------------------------------
+
     message = "\n".join(
         parts
     )
 
-    return clean_text(
-        message
+    message = clean_text(
+        message,
+        preserve_lines=True
     )
+
+    return message.strip()
 
 
 # ============================================================
@@ -713,7 +895,7 @@ async def send_news():
         )
 
         # ====================================================
-        # رتبه‌بندی
+        # رتبه‌بندی اخبار
         # ====================================================
 
         ranked_news = rank_news(
@@ -733,7 +915,7 @@ async def send_news():
         )
 
         # ====================================================
-        # انتخاب بهترین خبر بعد از بررسی ترجمه
+        # انتخاب بهترین خبر پس از ترجمه
         # ====================================================
 
         news = select_best_translated_news(
@@ -792,6 +974,22 @@ async def send_news():
         )
 
         print(
+            "📝 امتیاز عنوان:",
+            news.get(
+                "title_translation_score",
+                0
+            )
+        )
+
+        print(
+            "📄 امتیاز توضیحات:",
+            news.get(
+                "description_translation_score",
+                0
+            )
+        )
+
+        print(
             "⭐ امتیاز نهایی:",
             news.get(
                 "final_score",
@@ -815,6 +1013,21 @@ async def send_news():
 
             print(
                 "❌ پیام نهایی خالی است"
+            )
+
+            return
+
+        # ----------------------------------------------------
+        # جلوگیری از ارسال عنوان خالی
+        # ----------------------------------------------------
+
+        if not news.get(
+            "translated_title",
+            ""
+        ).strip():
+
+            print(
+                "❌ عنوان ترجمه‌شده وجود ندارد"
             )
 
             return
