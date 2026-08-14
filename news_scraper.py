@@ -52,7 +52,6 @@ URGENT_WORDS = [
 
     "Bitcoin ETF",
     "Ethereum ETF",
-    "ETF",
 
     "SEC",
     "CFTC",
@@ -95,7 +94,7 @@ CRYPTO_SOURCES = {
 
 
 # ============================================================
-# Possible RSS roundup / multi-news indicators
+# RSS roundup / multi-news indicators
 # ============================================================
 
 ROUNDUP_PHRASES = [
@@ -108,9 +107,11 @@ ROUNDUP_PHRASES = [
     "market roundup",
     "weekly roundup",
     "daily roundup",
+
     "here are the latest",
     "here's what you need to know",
     "what you need to know",
+
     "in other news",
     "other news",
     "meanwhile",
@@ -118,10 +119,19 @@ ROUNDUP_PHRASES = [
     "also in the news",
     "more news",
     "other headlines",
+
+    "market wrap",
+    "market recap",
+    "daily market",
+    "morning market",
+    "markets today",
 ]
 
 
-# عباراتی که معمولاً شروع خبر جدید یا موضوع جدید را نشان می‌دهند.
+# ============================================================
+# Story shift indicators
+# ============================================================
+
 STORY_SHIFT_PHRASES = [
 
     "meanwhile",
@@ -133,7 +143,105 @@ STORY_SHIFT_PHRASES = [
     "in a separate move",
     "in a separate development",
     "on another front",
+
+    "at the same time",
+    "separate announcement",
+    "separately announced",
 ]
+
+
+# ============================================================
+# Topic groups
+#
+# برای تشخیص خبرهای چندموضوعی
+# ============================================================
+
+TOPIC_GROUPS = {
+
+    "stocks": [
+        "stock",
+        "stocks",
+        "shares",
+        "equities",
+        "s&p",
+        "nasdaq",
+        "dow jones",
+        "wall street",
+    ],
+
+    "fed": [
+        "federal reserve",
+        "fed ",
+        "interest rate",
+        "interest rates",
+        "rate cut",
+        "rate cuts",
+        "rate hike",
+        "rate hikes",
+        "monetary policy",
+    ],
+
+    "crypto": [
+        "bitcoin",
+        "ethereum",
+        "crypto",
+        "cryptocurrency",
+        "blockchain",
+        "token",
+        "digital asset",
+        "digital assets",
+    ],
+
+    "etf": [
+        "bitcoin etf",
+        "ethereum etf",
+        "crypto etf",
+        "spot etf",
+        "etf",
+    ],
+
+    "geopolitics": [
+        "iran",
+        "china",
+        "russia",
+        "ukraine",
+        "war",
+        "sanctions",
+        "tariff",
+        "tariffs",
+        "trade war",
+    ],
+
+    "companies": [
+        "openai",
+        "apple",
+        "microsoft",
+        "google",
+        "amazon",
+        "meta",
+        "tesla",
+        "nvidia",
+    ],
+
+    "oil": [
+        "oil",
+        "crude",
+        "brent",
+        "wti",
+        "opec",
+    ],
+
+    "economy": [
+        "inflation",
+        "jobs",
+        "employment",
+        "unemployment",
+        "gdp",
+        "consumer prices",
+        "producer prices",
+        "retail sales",
+    ],
+}
 
 
 # ============================================================
@@ -168,7 +276,6 @@ def save_sent(data):
 
     try:
 
-        # فقط 1000 خبر آخر نگهداری شود.
         data = list(
             dict.fromkeys(data)
         )
@@ -205,6 +312,7 @@ def mark_as_sent(news_item):
         return
 
     if news_id_value not in sent:
+
         sent.append(
             news_id_value
         )
@@ -221,7 +329,6 @@ def clean_text(text):
     if not text:
         return ""
 
-    # تبدیل HTML entity ها
     text = html.unescape(
         str(text)
     )
@@ -247,14 +354,14 @@ def clean_text(text):
         text
     )
 
-    # تبدیل خط جدید و tab به فاصله
+    # تبدیل line break / tab
     text = re.sub(
         r"[\r\n\t]+",
         " ",
         text
     )
 
-    # فاصله‌های چندتایی
+    # فاصله‌های اضافی
     text = re.sub(
         r"\s+",
         " ",
@@ -275,16 +382,16 @@ def remove_rubbish(text):
 
     patterns = [
 
-        # Website leftovers
         r"The post .*? first appeared on .*",
         r"The post .*? appeared first on .*",
+
         r"Read more.*",
         r"Continue reading.*",
         r"Continue Reading.*",
+
         r"Read the full story.*",
         r"Read the full article.*",
 
-        # Subscription / advertising
         r"Subscribe.*",
         r"Advertisement.*",
         r"Advertisment.*",
@@ -292,10 +399,8 @@ def remove_rubbish(text):
         r"Sign up.*",
         r"Click here.*",
 
-        # Copyright
         r"©.*",
 
-        # Common RSS leftovers
         r"This article originally appeared.*",
         r"This story originally appeared.*",
         r"Originally published.*",
@@ -314,7 +419,7 @@ def remove_rubbish(text):
 
 
 # ============================================================
-# Remove duplicated title from description
+# Remove duplicate title from description
 # ============================================================
 
 def remove_duplicate_title(
@@ -336,7 +441,7 @@ def remove_duplicate_title(
     if not title_clean or not desc_clean:
         return desc_clean
 
-    # اگر description با عنوان شروع شده باشد.
+    # اگر description با عنوان شروع شده
     if desc_clean.lower().startswith(
         title_clean.lower()
     ):
@@ -347,7 +452,7 @@ def remove_duplicate_title(
             " :-–—|"
         )
 
-    # حذف تکرار عنوان در ابتدای متن.
+    # حذف دوباره عنوان در ابتدای متن
     desc_clean = re.sub(
         r"^"
         + re.escape(title_clean)
@@ -378,7 +483,6 @@ def split_sentences(text):
     if not text:
         return []
 
-    # تقسیم تقریبی جملات انگلیسی
     sentences = re.split(
         r"(?<=[.!?])\s+(?=[A-Z0-9])",
         text
@@ -398,6 +502,43 @@ def split_sentences(text):
             )
 
     return result
+
+
+# ============================================================
+# Count topic groups
+# ============================================================
+
+def count_topic_groups(
+    title,
+    description
+):
+
+    full_text = (
+        clean_text(title)
+        + " "
+        + clean_text(description)
+    ).lower()
+
+    matched_groups = []
+
+    for group_name, keywords in TOPIC_GROUPS.items():
+
+        found = False
+
+        for keyword in keywords:
+
+            if keyword.lower() in full_text:
+
+                found = True
+                break
+
+        if found:
+
+            matched_groups.append(
+                group_name
+            )
+
+    return matched_groups
 
 
 # ============================================================
@@ -432,122 +573,66 @@ def looks_like_roundup(
 
     for phrase in ROUNDUP_PHRASES:
 
-        if phrase in full_text:
+        if phrase.lower() in full_text:
+
             return True
 
     # --------------------------------------------------------
-    # 2. چند تغییر واضح موضوع
+    # 2. تغییر موضوع
     # --------------------------------------------------------
 
     shift_count = 0
 
+    description_lower = description.lower()
+
     for phrase in STORY_SHIFT_PHRASES:
 
-        if phrase in description.lower():
+        if phrase.lower() in description_lower:
+
             shift_count += 1
 
     if shift_count >= 2:
+
         return True
 
     # --------------------------------------------------------
-    # 3. متن بسیار طولانی با تعداد زیادی جمله
-    #
-    # یک خبر عادی می‌تواند چند جمله داشته باشد،
-    # اما RSS roundup معمولاً تعداد زیادی جمله/موضوع دارد.
+    # 3. تعداد زیاد جمله + متن طولانی
     # --------------------------------------------------------
 
     sentences = split_sentences(
         description
     )
 
-    if len(sentences) >= 6:
+    if (
+        len(sentences) >= 6
+        and len(description) >= 700
+    ):
 
-        # اگر متن طولانی و چندجمله‌ای است،
-        # احتمال تجمیعی بودن آن بیشتر است.
-        if len(description) >= 750:
-            return True
+        return True
 
     # --------------------------------------------------------
-    # 4. چند موضوع اقتصادی/سیاسی کاملاً متفاوت
+    # 4. تعداد زیاد حوزه‌های متفاوت
     # --------------------------------------------------------
 
-    topic_groups = {
+    matched_groups = count_topic_groups(
+        title,
+        description
+    )
 
-        "stocks": [
-            "stock",
-            "stocks",
-            "shares",
-            "equities",
-            "s&p",
-            "nasdaq",
-            "dow",
-        ],
+    # 4 حوزه یا بیشتر = احتمال بسیار زیاد roundup
+    if len(matched_groups) >= 4:
 
-        "fed": [
-            "federal reserve",
-            "fed ",
-            "interest rate",
-            "interest rates",
-            "rate cut",
-            "rate hike",
-        ],
+        return True
 
-        "crypto": [
-            "bitcoin",
-            "ethereum",
-            "crypto",
-            "cryptocurrency",
-            "token",
-            "etf",
-        ],
+    # --------------------------------------------------------
+    # 5. سه حوزه کاملاً متفاوت + متن طولانی
+    # --------------------------------------------------------
 
-        "geopolitics": [
-            "iran",
-            "china",
-            "russia",
-            "ukraine",
-            "war",
-            "sanctions",
-            "tariff",
-            "tariffs",
-        ],
+    if (
+        len(matched_groups) >= 3
+        and len(description) >= 600
+    ):
 
-        "companies": [
-            "openai",
-            "apple",
-            "microsoft",
-            "google",
-            "amazon",
-            "meta",
-            "tesla",
-        ],
-
-        "oil": [
-            "oil",
-            "crude",
-            "brent",
-            "wti",
-        ],
-    }
-
-    matched_groups = 0
-
-    for keywords in topic_groups.values():
-
-        found = False
-
-        for keyword in keywords:
-
-            if keyword in full_text:
-                found = True
-                break
-
-        if found:
-            matched_groups += 1
-
-    # اگر حداقل 4 حوزه کاملاً متفاوت در یک RSS entry وجود داشته باشد،
-    # احتمال roundup بسیار بالاست.
-    if matched_groups >= 4:
         return True
 
     return False
@@ -579,6 +664,7 @@ def shorten(
     )
 
     if last_space > limit * 0.75:
+
         shortened = shortened[
             :last_space
         ]
@@ -614,12 +700,29 @@ def check_priority(text):
     if not text:
         return False
 
-    text = text.lower()
+    text = clean_text(
+        text
+    ).lower()
 
-    return any(
-        word.lower() in text
-        for word in URGENT_WORDS
-    )
+    for word in URGENT_WORDS:
+
+        pattern = (
+            r"(?<![a-z0-9])"
+            + re.escape(
+                word.lower()
+            )
+            + r"(?![a-z0-9])"
+        )
+
+        if re.search(
+            pattern,
+            text,
+            flags=re.IGNORECASE
+        ):
+
+            return True
+
+    return False
 
 
 # ============================================================
@@ -679,6 +782,7 @@ def is_recent(
     )
 
     if published.year == 1:
+
         return True
 
     now = datetime.now(
@@ -714,19 +818,19 @@ def get_description(item):
 
     if not description:
 
-        description = item.get(
+        content = item.get(
             "content",
             ""
         )
 
         if isinstance(
-            description,
+            content,
             list
         ):
 
             parts = []
 
-            for part in description:
+            for part in content:
 
                 if isinstance(
                     part,
@@ -739,6 +843,7 @@ def get_description(item):
                     )
 
                     if value:
+
                         parts.append(
                             value
                         )
@@ -746,6 +851,10 @@ def get_description(item):
             description = " ".join(
                 parts
             )
+
+        else:
+
+            description = content
 
     return clean_text(
         description
@@ -757,7 +866,7 @@ def get_description(item):
 # ============================================================
 
 def get_news(
-    limit=30
+    limit=50
 ):
 
     sent = set(
@@ -776,7 +885,7 @@ def get_news(
                 url
             )
 
-            # حداکثر 30 entry از هر منبع بررسی شود.
+            # حداکثر 30 خبر از هر منبع
             for item in feed.entries[:30]:
 
                 # ------------------------------------------
@@ -786,6 +895,7 @@ def get_news(
                 if not is_recent(
                     item
                 ):
+
                     continue
 
                 # ------------------------------------------
@@ -800,6 +910,7 @@ def get_news(
                 )
 
                 if len(title) < 15:
+
                     continue
 
                 # ------------------------------------------
@@ -813,6 +924,7 @@ def get_news(
                 )
 
                 if normalized_title in seen_titles:
+
                     continue
 
                 seen_titles.add(
@@ -828,6 +940,7 @@ def get_news(
                 )
 
                 if uid in sent:
+
                     continue
 
                 # ------------------------------------------
@@ -857,6 +970,15 @@ def get_news(
                 )
 
                 # ------------------------------------------
+                # Topic groups
+                # ------------------------------------------
+
+                topic_groups = count_topic_groups(
+                    title,
+                    description
+                )
+
+                # ------------------------------------------
                 # Category
                 # ------------------------------------------
 
@@ -869,12 +991,17 @@ def get_news(
                 # ------------------------------------------
                 # Priority
                 #
-                # اولویت بر اساس عنوان + متن است،
-                # اما در مرحله filter وزن آن کنترل خواهد شد.
+                # عنوان + متن
                 # ------------------------------------------
 
-                urgent = check_priority(
+                priority_text = (
                     title
+                    + " "
+                    + description
+                )
+
+                urgent = check_priority(
+                    priority_text
                 )
 
                 # ------------------------------------------
@@ -897,6 +1024,8 @@ def get_news(
                     "category": category,
 
                     "aggregated": aggregated,
+
+                    "topic_groups": topic_groups,
 
                     "link": item.get(
                         "link",
@@ -929,10 +1058,7 @@ def get_news(
     )
 
     # ========================================================
-    # حذف کاندیدهای بسیار ضعیف
-    #
-    # خبرهای aggregated را فعلاً حذف نمی‌کنیم؛
-    # به filter می‌فرستیم تا بتواند در امتیازدهی تصمیم بگیرد.
+    # حذف کاندیدهای ضعیف
     # ========================================================
 
     clean_news = []
@@ -949,18 +1075,21 @@ def get_news(
             ""
         )
 
-        # عنوان باید معتبر باشد.
         if len(title) < 15:
+
             continue
 
-        # متن کاملاً خالی قابل قبول است،
-        # چون بعضی RSSها description ندارند.
         if description is None:
+
             item["description"] = ""
 
         clean_news.append(
             item
         )
+
+    # ========================================================
+    # تعداد بیشتری خبر به news_filter بده
+    # ========================================================
 
     return clean_news[:limit]
 
@@ -998,8 +1127,18 @@ if __name__ == "__main__":
     )
 
     print(
+        "\nTopic groups:",
+        count_topic_groups(
+            test_title,
+            test_description
+        )
+    )
+
+    print(
         "\nPriority:",
         check_priority(
             test_title
+            + " "
+            + test_description
         )
     )
